@@ -1,0 +1,63 @@
+_target_: pangaea.encoders.hiera_encoder.HIERA_Encoder
+encoder_weights: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/spectral_earth_mm_experiments/logs/ssl_pretrain_juwels/spectral_earth_mm/lo/dino/hiera_b/clstrue/multiruns/2026-02-06_14-10-51/lr0.00001_wu10_bs12/checkpoints/last.backbone.pt
+download_url: null
+
+embed_dim: 192
+input_size: 128
+num_classes: 0
+num_heads: 2
+in_chans: 7
+stages:
+  - 2
+  - 6
+  - 10
+q_pool: 2
+q_stride:
+  - 2
+  - 2
+mask_unit_size:
+  - 4
+  - 4
+mask_unit_attn:
+  - true
+  - true
+  - false
+dim_mul: 2.0
+head_mul: 2.0
+pos_embed_type: learnable
+patch_kernel:
+  - 3
+  - 3
+patch_stride:
+  - 2
+  - 2
+patch_padding:
+  - 1
+  - 1
+mlp_ratio: 4.0
+drop_path_rate: 0.0
+head_dropout: 0.0
+head_init_scale: 0.001
+sep_pos_embed: false
+use_cls_token: true
+patch_size: 2
+
+input_bands:
+  optical:
+    - B2
+    - B3
+    - B4
+    - B8A
+    - B9
+    - B11
+    - B12
+
+output_layers:
+  - 0
+  - 1
+  - 2
+
+output_dim:
+  - 192
+  - 384
+  - 768

@@ -1,0 +1,33 @@
+_target_: pangaea.encoders.vit_encoder.VIT_Encoder
+encoder_weights: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/spectral_earth_mm_experiments/logs/ssl_pretrain/spectral_earth_mm/s2/dino_v2/vit_b_timm/multiruns/2026-02-04_09-55-34/lr0.0001_wu10_nlv4_bs32/checkpoints/last.backbone.pt
+download_url: null
+
+embed_dim: 768
+input_size: 384
+patch_size: 12
+depth: 12
+num_heads: 12
+mlp_ratio: 4
+
+input_bands:
+  optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B11
+    - B12
+  
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

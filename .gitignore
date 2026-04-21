@@ -1,0 +1,24 @@
+**/__pycache__/
+*.egg-info
+
+aaa_mystuff/
+work-dir/
+outputs/
+old_files/
+pretrained/
+pretrained_models/
+work-dir/
+wandb/
+data/*
+data
+pretrained_models
+# Scenes for mados tiny
+# Wow gitignore pattern mathcing is a mess
+!data/mados
+data/mados/*
+!data/mados/splits
+data/mados/splits/*
+!data/mados/splits/tiny_X.txt
+
+.vscode
+.idea

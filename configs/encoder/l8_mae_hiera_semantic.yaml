@@ -1,0 +1,72 @@
+_target_: pangaea.encoders.two_stages_hiera_mae.MaskedAutoencoderTwoStagesHIERA_Encoder
+encoder_weights: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/spectral_earth_mm_experiments/logs/ssl_pretrain_juwels/spectral_earth_mm/lo/mae_hiera/two_stages_hiera_mae_b/clstrue_ms_lrn_pcls_glo_semantic_mr0.8/multiruns/2026-02-06_22-31-00/lr0.00001_bs12/checkpoints/last.backbone.pt
+download_url: null
+
+in_chans: 7
+spectral_groups: 10
+spec_depth: 2
+spec_num_heads: 2
+input_size: 128
+embed_dim: 192
+num_heads: 2
+stages:
+- 2
+- 6
+- 10
+q_pool: 2
+q_stride:
+- 2
+- 2
+mask_unit_size:
+- 4
+- 4
+mask_unit_attn:
+- true
+- true
+- false
+dim_mul: 2.0
+head_mul: 2.0
+multiscale_fusion: true
+pos_embed_type: learnable
+spectral_pos_embed_type: learnable
+spectral_groups_file: configs/encoder/groupings/lo_semantic.yaml
+spectral_pooling: cls
+patch_kernel:
+- 3
+- 3
+patch_stride:
+- 2
+- 2
+patch_padding:
+- 1
+- 1
+mlp_ratio: 4.0
+drop_path_rate: 0.0
+head_dropout: 0.0
+head_init_scale: 0.001
+sep_pos_embed: false
+patch_size: 2
+decoder_embed_dim: 512
+decoder_depth: 1
+decoder_num_heads: 16
+use_cls_token: true
+
+input_bands:
+  optical:
+    - B2
+    - B3
+    - B4
+    - B8A
+    - B9
+    - B11
+    - B12
+    
+output_layers:
+  - 0
+  - 1
+  - 2
+
+output_dim:
+  - 192
+  - 384
+  - 768
