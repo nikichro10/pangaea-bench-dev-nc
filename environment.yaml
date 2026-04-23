@@ -7,7 +7,7 @@ channels:
 dependencies:
   - python=3.10
   - geopandas
-  - numpy>=2.0
+  - numpy
   - pillow
   - pytorch>=2.1
   - rasterio
