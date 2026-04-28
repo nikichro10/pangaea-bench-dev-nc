@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofa_seg"
 readonly ENCODER="dofa"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar01c02s02,hpdar01c02s03,hpdar01c03s04,hpdar01c04s03,hpdar01c04s04,hpdar04c01s02,hpdar04c05s01,hpdar04c05s05,hpdar04c06s03"
+readonly SLURM_EXCLUDE="hpdar01c02s02,hpdar01c02s03,hpdar01c03s04,hpdar01c04s03,hpdar01c04s04,hpdar04c01s02,hpdar04c05s01,hpdar04c05s05,hpdar04c06s03,hpdar04c04s02"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -84,7 +84,6 @@ launch_job() {
 #SBATCH --error=${LOG_DIR}/${dataset}_error.%j
 #SBATCH --chdir=/dss/dsshome1/08/di54zop/pangaea-bench_dev
 
-export CUDA_VISIBLE_DEVICES=0
 export HYDRA_FULL_ERROR=1
 
 module add micromamba
@@ -112,6 +111,7 @@ declare -A dataset_sizes=(
     ["croptypemapping"]=64
     ["spacenet7cd"]=256
     ["ai4smallfarms"]=496
+    ["fivebillionpixels"]=520
 )
 
 # -----------------------------------------------------------------------------
@@ -124,6 +124,7 @@ declare -A dataset_sizes=(
 #
 # spacenet7cd: change detection with siamese decoder
 # ai4smallfarms: dice loss due to class imbalance, data_replicate=2
+# fivebillionpixels: 25 classes, large images
 # -----------------------------------------------------------------------------
 declare -A datasets=(
     ["hlsburnscars"]="segmentation    seg_upernet          cross_entropy  6:00:00"
@@ -131,15 +132,29 @@ declare -A datasets=(
     ["mados"]="segmentation          seg_upernet          cross_entropy  8:00:00"
     ["pastis"]="segmentation         seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
-    ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
+    ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole dataset.bands.sar=[]"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
     ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
 )
 
 # -----------------------------------------------------------------------------
-# SUBMIT ALL JOBS
+# SELECT DATASETS TO RUN
+# Edit this list to choose which datasets to submit.
+# Use "all" to run everything, or list specific dataset names.
+# Example: RUN_DATASETS="hlsburnscars sen1floods11 mados"
+# -----------------------------------------------------------------------------
+RUN_DATASETS="croptypemapping"  # all, or space-separated list of dataset keys
+
+# -----------------------------------------------------------------------------
+# SUBMIT JOBS
 # -----------------------------------------------------------------------------
 for dataset in "${!datasets[@]}"; do
+    if [ "$RUN_DATASETS" != "all" ]; then
+        # skip if not in the selected list
+        [[ " $RUN_DATASETS " != *" $dataset "* ]] && continue
+    fi
+
     read -r task decoder criterion time_limit remainder <<< "${datasets[$dataset]}"
     read -ra extra_args <<< "$remainder"
 
