@@ -1119,6 +1119,78 @@ class RandomResizedCropToEncoder(RandomResizedCrop):
         )
 
 
+class RandomHorizontalFlip(BasePreprocessor):
+    def __init__(self, p: float = 0.5, **meta) -> None:
+        super().__init__()
+        self.p = p
+
+    def __call__(self, data):
+        if torch.rand(1) < self.p:
+            for k in data["image"]:
+                data["image"][k] = TF.hflip(data["image"][k])
+            if len(data["target"].shape) == 2:
+                data["target"] = TF.hflip(data["target"].unsqueeze(0)).squeeze(0)
+        return data
+
+    def update_meta(self, meta):
+        return meta
+
+
+class RandomVerticalFlip(BasePreprocessor):
+    def __init__(self, p: float = 0.5, **meta) -> None:
+        super().__init__()
+        self.p = p
+
+    def __call__(self, data):
+        if torch.rand(1) < self.p:
+            for k in data["image"]:
+                data["image"][k] = TF.vflip(data["image"][k])
+            if len(data["target"].shape) == 2:
+                data["target"] = TF.vflip(data["target"].unsqueeze(0)).squeeze(0)
+        return data
+
+    def update_meta(self, meta):
+        return meta
+
+
+class RandomRotation(BasePreprocessor):
+    def __init__(self, degrees: float = 90.0, **meta) -> None:
+        super().__init__()
+        self.degrees = degrees
+        self.ignore_index = meta.get("ignore_index", -1)
+
+    def __call__(self, data):
+        angle = T.RandomRotation.get_params([-self.degrees, self.degrees])
+        for k in data["image"]:
+            data["image"][k] = TF.rotate(data["image"][k], angle)
+        if len(data["target"].shape) == 2:
+            data["target"] = TF.rotate(
+                data["target"].unsqueeze(0),
+                angle,
+                fill=self.ignore_index,
+            ).squeeze(0)
+        return data
+
+    def update_meta(self, meta):
+        return meta
+
+
+class CenterCropToEncoder(BasePreprocessor):
+    def __init__(self, **meta) -> None:
+        super().__init__()
+        self.size = meta["encoder_input_size"]
+
+    def __call__(self, data):
+        for k in data["image"]:
+            data["image"][k] = TF.center_crop(data["image"][k], self.size)
+        if len(data["target"].shape) == 2:
+            data["target"] = TF.center_crop(data["target"].unsqueeze(0), self.size).squeeze(0)
+        return data
+
+    def update_meta(self, meta):
+        return meta
+
+
 def _setup_size(size, error_msg):
     if isinstance(size, numbers.Number):
         return int(size), int(size)

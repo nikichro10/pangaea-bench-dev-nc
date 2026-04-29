@@ -39,7 +39,7 @@ launch_job() {
     local -ra extra_args=("${@:6}")
 
     local -r dataset_size="${dataset_sizes[$dataset]}"
-    local -r preprocessing=$(choose_preprocessing "$dataset_size")
+    local -r preprocessing="seg_geobench"
     local -r job_name="dofa_${dataset}"
     local -r sbatch_script="${dataset}_dofa_geobench.sh"
 
@@ -112,12 +112,12 @@ declare -A dataset_sizes=(
 # All GeoBench seg datasets: single-temporal, optical only, seg_upernet
 # -----------------------------------------------------------------------------
 declare -A datasets=(
-    ["mpv4ger-seg"]="segmentation        seg_upernet  cross_entropy  4:00:00"
-    ["mchesapeake-landcover"]="segmentation seg_upernet cross_entropy 4:00:00"
-    ["msa-crop-type"]="segmentation       seg_upernet  cross_entropy  4:00:00"
-    ["mcashew-plantation"]="segmentation  seg_upernet  cross_entropy  4:00:00"
-    ["mneontree"]="segmentation           seg_upernet  cross_entropy  4:00:00"
-    ["mnz-cattle"]="segmentation          seg_upernet  cross_entropy  4:00:00"
+    ["mpv4ger-seg"]="segmentation        seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mchesapeake-landcover"]="segmentation seg_upernet cross_entropy 2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["msa-crop-type"]="segmentation       seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mcashew-plantation"]="segmentation  seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mneontree"]="segmentation           seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mnz-cattle"]="segmentation          seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
 )
 
 # -----------------------------------------------------------------------------

@@ -27,3 +27,11 @@ def MultiStepLR(
         optimizer, [int(total_iters * r) for r in lr_milestones], gamma=0.1
     )
 
+
+def CosineAnnealingLR(
+    optimizer: Optimizer, total_iters: int
+) -> LRScheduler:
+    return torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=total_iters, eta_min=0
+    )
+
