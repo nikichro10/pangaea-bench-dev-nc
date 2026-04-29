@@ -1120,6 +1120,15 @@ class RandomResizedCropToEncoder(RandomResizedCrop):
 
 
 class RandomHorizontalFlip(BasePreprocessor):
+    """Randomly flips image and target horizontally with probability p.
+
+    Image and target receive the same flip to keep them aligned.
+    Classification targets (0D/1D) are not flipped.
+
+    Args:
+        p (float): Probability of flipping. Default: 0.5.
+    """
+
     def __init__(self, p: float = 0.5, **meta) -> None:
         super().__init__()
         self.p = p
@@ -1137,6 +1146,15 @@ class RandomHorizontalFlip(BasePreprocessor):
 
 
 class RandomVerticalFlip(BasePreprocessor):
+    """Randomly flips image and target vertically with probability p.
+
+    Image and target receive the same flip to keep them aligned.
+    Classification targets (0D/1D) are not flipped.
+
+    Args:
+        p (float): Probability of flipping. Default: 0.5.
+    """
+
     def __init__(self, p: float = 0.5, **meta) -> None:
         super().__init__()
         self.p = p
@@ -1154,6 +1172,16 @@ class RandomVerticalFlip(BasePreprocessor):
 
 
 class RandomRotation(BasePreprocessor):
+    """Randomly rotates image and target by an angle drawn uniformly from [-degrees, degrees].
+
+    Image and target receive the same rotation to keep them aligned.
+    Target border pixels introduced by rotation are filled with ignore_index.
+    Classification targets (0D/1D) are not rotated.
+
+    Args:
+        degrees (float): Range of rotation in degrees. Default: 90.0.
+    """
+
     def __init__(self, degrees: float = 90.0, **meta) -> None:
         super().__init__()
         self.degrees = degrees
@@ -1176,6 +1204,13 @@ class RandomRotation(BasePreprocessor):
 
 
 class CenterCropToEncoder(BasePreprocessor):
+    """Crops the center of image and target to the encoder's input size.
+
+    Used for val/test where deterministic cropping is required.
+    The crop size is read automatically from encoder_input_size in meta.
+    Classification targets (0D/1D) are not cropped.
+    """
+
     def __init__(self, **meta) -> None:
         super().__init__()
         self.size = meta["encoder_input_size"]

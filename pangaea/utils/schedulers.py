@@ -31,6 +31,16 @@ def MultiStepLR(
 def CosineAnnealingLR(
     optimizer: Optimizer, total_iters: int
 ) -> LRScheduler:
+    """Creates a CosineAnnealingLR scheduler that decays LR from its initial
+    value to 0 following a cosine curve over total_iters steps.
+
+    Args:
+        optimizer (Optimizer): The optimizer to schedule.
+        total_iters (int): Total number of training iterations (T_max).
+
+    Returns:
+        LRScheduler: CosineAnnealingLR scheduler.
+    """
     return torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=total_iters, eta_min=0
     )
