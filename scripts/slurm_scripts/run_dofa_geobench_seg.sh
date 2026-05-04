@@ -112,12 +112,12 @@ declare -A dataset_sizes=(
 # All GeoBench seg datasets: single-temporal, optical only, seg_upernet
 # -----------------------------------------------------------------------------
 declare -A datasets=(
-    ["mpv4ger-seg"]="segmentation        seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
-    ["mchesapeake-landcover"]="segmentation seg_upernet cross_entropy 2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
-    ["msa-crop-type"]="segmentation       seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
-    ["mcashew-plantation"]="segmentation  seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
-    ["mneontree"]="segmentation           seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
-    ["mnz-cattle"]="segmentation          seg_upernet  cross_entropy  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mpv4ger-seg"]="segmentation        seg_upernet  weighted_cross_entropy_auto  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mchesapeake-landcover"]="segmentation seg_upernet weighted_cross_entropy_auto 2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["msa-crop-type"]="segmentation       seg_upernet  weighted_cross_entropy_auto  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mcashew-plantation"]="segmentation  seg_upernet  weighted_cross_entropy_auto  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mneontree"]="segmentation           seg_upernet  weighted_cross_entropy_auto  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
+    ["mnz-cattle"]="segmentation          seg_upernet  weighted_cross_entropy_auto  2:00:00 task.trainer.n_epochs=20 optimizer.lr=0.005 batch_size=64 lr_scheduler=cosine_annealing_lr"
 )
 
 # -----------------------------------------------------------------------------

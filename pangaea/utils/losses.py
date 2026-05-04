@@ -19,6 +19,36 @@ class WeightedCrossEntropy(torch.nn.Module):
         return self.loss(logits, target)
 
 
+class WeightedCrossEntropyAuto(torch.nn.Module):
+    """Cross-entropy with inverse-frequency class weights computed per batch.
+
+    Weights are derived from pixel counts in each batch, so no pre-computed
+    class distribution is needed. Rare classes (e.g. cattle, tree) receive
+    higher weight proportional to how underrepresented they are.
+
+    Args:
+        ignore_index (int): Label value to ignore in loss and weight computation.
+        num_classes (int): Total number of classes.
+    """
+
+    def __init__(self, ignore_index: int, num_classes: int) -> None:
+        super().__init__()
+        self.ignore_index = ignore_index
+        self.num_classes = num_classes
+
+    def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        mask = target != self.ignore_index
+        valid = target[mask]
+        counts = torch.bincount(valid.flatten(), minlength=self.num_classes).float()
+        # inverse frequency; clamp avoids division by zero for absent classes
+        weights = 1.0 / counts.clamp(min=1)
+        # normalize so weights sum to num_classes (keeps loss scale stable)
+        weights = weights * (self.num_classes / weights.sum())
+        return F.cross_entropy(
+            logits, target, weight=weights.to(logits.device), ignore_index=self.ignore_index
+        )
+
+
 class DICELoss(torch.nn.Module):
     def __init__(self, ignore_index: int) -> None:
         super(DICELoss, self).__init__()
