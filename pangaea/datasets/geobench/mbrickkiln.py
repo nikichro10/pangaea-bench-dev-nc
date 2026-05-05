@@ -158,7 +158,7 @@ class mBrickKiln(RawGeoFMDataset):
 
         for file in dataset_files:
 
-            if file not in ['classification_v1.0/m-pv4ger.zip', 'classification_v1.0/normalizer.json']:
+            if file not in ['classification_v1.0/m-brick-kiln.zip', 'classification_v1.0/normalizer.json']:
                 continue
 
             local_file_path = local_directory / file

@@ -1,0 +1,6 @@
+_target_: pangaea.utils.optimizers.LARS
+params: null
+lr: 1.0
+weight_decay: 0.0
+momentum: 0.9
+trust_coefficient: 0.001

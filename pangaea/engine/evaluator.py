@@ -240,9 +240,9 @@ class LinearClassificationEvaluator(Evaluator):
         used_time = time.time() - t
         return metrics, used_time
     
-    def __call__(self, model, model_name, model_ckpt_path=None):
+    def __call__(self, model, model_name, model_ckpt_path=None, epoch=None):
         return self.evaluate(model, model_name, model_ckpt_path)
-    
+
     def compute_metrics(self):
         pass
 

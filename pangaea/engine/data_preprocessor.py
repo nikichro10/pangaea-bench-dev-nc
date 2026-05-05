@@ -50,7 +50,7 @@ class BasePreprocessor:
                     f"Image size (T, H, W) from all modalities must be equal, Got {str(shape)}"
                 )
 
-        if base_shape[-2:] != data["target"].shape[-2:]:
+        if data["target"].ndim >= 2 and base_shape[-2:] != data["target"].shape[-2:]:
             raise AssertionError(
                 f"Image size and target size (H, W) must be equal, Got {str(tuple(base_shape[-2:]))} and {str(tuple(data['target'].shape[-2:]))}"
             )
@@ -1083,7 +1083,8 @@ class RandomResizedCrop(BasePreprocessor):
                 ).squeeze(0)
 
         else:
-            data["target"] = TF.crop(data["target"], i, j, h, w)
+            if data["target"].ndim >= 2:
+                data["target"] = TF.crop(data["target"], i, j, h, w)
 
         return data
 
