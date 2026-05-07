@@ -22,6 +22,12 @@ for norm in dofa_norm custom_global custom_bandwise; do
     cmd+=" --config-name=train"
     cmd+=" train=False"
     cmd+=" ckpt_dir='${ckpt_dir}'"
+    cmd+=" task=segmentation"
+    cmd+=" dataset=croptypemapping_optical"
+    cmd+=" encoder=dofa"
+    cmd+=" decoder=seg_upernet_mt_ltae"
+    cmd+=" preprocessing=seg_resize"
+    cmd+=" criterion=cross_entropy"
     cmd+=" use_wandb=False"
 
     printf 'Launching test-only [croptypemapping_optical] norm=%s\n' "$norm"

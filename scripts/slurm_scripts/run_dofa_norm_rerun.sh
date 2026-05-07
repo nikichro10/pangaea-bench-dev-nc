@@ -20,11 +20,10 @@ declare -A norm_configs=(
 
 # Format: "task decoder base_preprocessing criterion time_limit [extra_args...]"
 declare -A datasets=(
-    ["mados"]="segmentation         seg_upernet          seg_focus_crop   cross_entropy  8:00:00"
     ["pastis_optical"]="segmentation seg_upernet_mt_ltae seg_resize       cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
 )
 
-RUN_NORMS="dofa_norm custom_global custom_bandwise"
+RUN_NORMS="dofa_norm custom_global"
 
 launch_job() {
     local -r dataset=$1
