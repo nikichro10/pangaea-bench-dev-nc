@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofa_seg"
 readonly ENCODER="dofa"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar04c04s02"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -147,7 +147,7 @@ declare -A datasets=(
 # Use "all" to run everything, or list specific dataset names.
 # Example: RUN_DATASETS="hlsburnscars sen1floods11 mados"
 # -----------------------------------------------------------------------------
-RUN_DATASETS="croptypemapping croptypemapping_optical pastis_optical"  # all, or space-separated list of dataset keys
+RUN_DATASETS="pastis_optical"  # all, or space-separated list of dataset keys
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS

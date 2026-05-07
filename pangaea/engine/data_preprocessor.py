@@ -420,8 +420,16 @@ class NormalizeMeanStdCustomBandwise(BasePreprocessor):
             custom_data_mean = {k: v * 10000 for k, v in custom_data_mean.items()}
             custom_data_std = {k: v * 10000 for k, v in custom_data_std.items()}
 
-        self.data_mean = {"optical": torch.tensor([custom_data_mean[b] for b in dataset_valid_bands])}
-        self.data_std = {"optical": torch.tensor([custom_data_std[b] for b in dataset_valid_bands])}
+        # Fall back to dataset statistics for bands not in the custom dict
+        dataset_means = dict(zip(meta["dataset_bands"]["optical"], meta["data_mean"]["optical"].tolist()))
+        dataset_stds  = dict(zip(meta["dataset_bands"]["optical"], meta["data_std"]["optical"].tolist()))
+
+        self.data_mean = {"optical": torch.tensor(
+            [custom_data_mean[b] if b in custom_data_mean else dataset_means[b] for b in dataset_valid_bands]
+        )}
+        self.data_std = {"optical": torch.tensor(
+            [custom_data_std[b] if b in custom_data_std else dataset_stds[b] for b in dataset_valid_bands]
+        )}
 
     def __call__(
         self, data: dict[str, torch.Tensor | dict[str, torch.Tensor]]
@@ -462,6 +470,103 @@ class NormalizeMeanStdCustomBandwise(BasePreprocessor):
             for k, v in meta["data_max"].items()
         }
 
+        return meta
+
+
+class NormalizeMeanStdDOFA(BasePreprocessor):
+    """Normalize using official DOFA pretraining statistics from SatlasPretrain.
+
+    Values are taken from the DOFA demo notebook (0-255 scale) and divided by
+    255 to obtain [0, 1]-scale statistics.  For datasets stored in [0, 10000]
+    scale the values are multiplied by 10000 accordingly.
+
+    Bands not present in the DOFA demo (B1, B9, B10, B8A) fall back to the
+    dataset's own statistics so the normalizer works with any S2 band subset.
+    """
+
+    # Source: DOFA demo notebook, S2_MEAN/S2_STD (0-255 scale) ÷ 255
+    # 9 bands: B4, B3, B2, B5, B6, B7, B8, B11, B12
+    _OPTICAL_MEAN = {
+        "B2":  126.6 / 255,   # 0.490 µm  → 0.4965
+        "B3":  114.8 / 255,   # 0.560 µm  → 0.4502
+        "B4":  114.1 / 255,   # 0.665 µm  → 0.4475
+        "B5":   84.3 / 255,   # 0.705 µm  → 0.3306
+        "B6":   97.8 / 255,   # 0.740 µm  → 0.3835
+        "B7":  103.9 / 255,   # 0.783 µm  → 0.4075
+        "B8":  101.4 / 255,   # 0.842 µm  → 0.3976
+        "B11":  72.3 / 255,   # 1.610 µm  → 0.2835
+        "B12":  56.7 / 255,   # 2.190 µm  → 0.2224
+    }
+    _OPTICAL_STD = {
+        "B2":  67.4 / 255,
+        "B3":  70.0 / 255,
+        "B4":  77.8 / 255,
+        "B5":  64.6 / 255,
+        "B6":  61.7 / 255,
+        "B7":  61.3 / 255,
+        "B8":  60.3 / 255,
+        "B11": 47.9 / 255,
+        "B12": 42.6 / 255,
+    }
+    # Source: DOFA demo notebook, S1_MEAN/S1_STD (VH, VV order) ÷ 255
+    _SAR_MEAN = {"VH": 166.4 / 255, "VV": 88.5 / 255}
+    _SAR_STD  = {"VH":  64.8 / 255, "VV": 43.1 / 255}
+
+    _SCALE_10K = {"Pastis", "Sen1Floods11", "AI4SmallFarms", "DynamicEarthNet"}
+
+    def __init__(self, **meta) -> None:
+        super().__init__()
+        scale = 10000.0 if meta["dataset_name"] in self._SCALE_10K else 1.0
+
+        self.data_mean = {}
+        self.data_std = {}
+        for modality, bands in meta["dataset_bands"].items():
+            if modality == "optical":
+                src_mean, src_std = self._OPTICAL_MEAN, self._OPTICAL_STD
+            elif modality == "sar":
+                src_mean, src_std = self._SAR_MEAN, self._SAR_STD
+            else:
+                continue
+
+            # Build per-band lookup from dataset statistics as fallback
+            dataset_means = dict(zip(meta["dataset_bands"][modality],
+                                     meta["data_mean"][modality].tolist()))
+            dataset_stds  = dict(zip(meta["dataset_bands"][modality],
+                                     meta["data_std"][modality].tolist()))
+
+            means, stds = [], []
+            for b in bands:
+                if b in src_mean:
+                    means.append(src_mean[b] * scale)
+                    stds.append(src_std[b] * scale)
+                else:
+                    # Band not in DOFA pretraining — fall back to dataset stats
+                    means.append(dataset_means[b])
+                    stds.append(dataset_stds[b])
+
+            self.data_mean[modality] = torch.tensor(means, dtype=torch.float)
+            self.data_std[modality]  = torch.tensor(stds,  dtype=torch.float)
+
+    def __call__(
+        self, data: dict[str, torch.Tensor | dict[str, torch.Tensor]]
+    ) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
+        for k in self.data_mean:
+            data["image"][k].sub_(self.data_mean[k].view(-1, 1, 1, 1)).div_(
+                self.data_std[k].view(-1, 1, 1, 1)
+            )
+        return data
+
+    def update_meta(self, meta):
+        meta["data_mean"] = {k: torch.zeros_like(v) for k, v in meta["data_mean"].items()}
+        meta["data_std"] = {k: torch.ones_like(v) for k, v in meta["data_std"].items()}
+        meta["data_min"] = {
+            k: (v - meta["data_mean"][k]) / meta["data_std"][k]
+            for k, v in meta["data_min"].items()
+        }
+        meta["data_max"] = {
+            k: (v - meta["data_mean"][k]) / meta["data_std"][k]
+            for k, v in meta["data_max"].items()
+        }
         return meta
 
 

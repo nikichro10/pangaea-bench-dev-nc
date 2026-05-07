@@ -48,13 +48,14 @@ def get_exp_info(hydra_config: HydraConf) -> dict[str, str]:
     decoder = choices["decoder"]
     ds = choices["dataset"]
     task = choices["task"]
+    preprocessing = choices.get("preprocessing", "")
     exp_info = {
         "timestamp": timestamp,
         "fm": fm,
         "decoder": decoder,
         "ds": ds,
         "task": task,
-        "exp_name": f"{timestamp}_{cfg_hash}_{fm}_{decoder}_{ds}",
+        "exp_name": f"{timestamp}_{cfg_hash}_{fm}_{decoder}_{ds}_{preprocessing}",
     }
     return exp_info
 

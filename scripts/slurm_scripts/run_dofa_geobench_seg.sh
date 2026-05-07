@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofa_geobench_se
 readonly ENCODER="dofa"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar04c04s02"
+readonly SLURM_EXCLUDE="hpdar04c04s02 hpdar04c02s05"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 

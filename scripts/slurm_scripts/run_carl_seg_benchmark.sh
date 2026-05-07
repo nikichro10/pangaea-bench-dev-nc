@@ -131,7 +131,7 @@ declare -A datasets=(
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
     ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
-    ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
+    ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  24:00:00"
 )
 
 # -----------------------------------------------------------------------------
