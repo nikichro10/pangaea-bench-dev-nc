@@ -22,3 +22,9 @@ data/mados/splits/*
 
 .vscode
 .idea
+
+# Logs and runtime artifacts
+*.log
+slurm-*.out
+core.*
+scripts/logs/

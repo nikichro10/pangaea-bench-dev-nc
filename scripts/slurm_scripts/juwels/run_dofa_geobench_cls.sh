@@ -51,7 +51,7 @@ launch_job() {
     local -r job_name="dofa_cls_${dataset}_lr${lr}"
     local -r sbatch_script="${dataset}_${lr}_dofa_cls.sh"
 
-    local cmd="torchrun --standalone --nnodes=1 --nproc_per_node=1 pangaea/run.py"
+    local cmd="torchrun --standalone --nnodes=1 --nproc_per_node=4 pangaea/run.py"
     cmd+=" --config-name=train"
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${ENCODER}"
@@ -78,8 +78,8 @@ launch_job() {
 #SBATCH --partition=booster
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=48
+#SBATCH --gres=gpu:4
 #SBATCH --time=${time_limit}
 #SBATCH --output=${LOG_DIR}/${dataset}_lr${lr}_%j.out
 #SBATCH --error=${LOG_DIR}/${dataset}_lr${lr}_%j.err
