@@ -20,12 +20,12 @@ mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 # mforestnet_l8 excluded: CARL's BAND_WAVELENGTHS only covers S2 band names.
 # -----------------------------------------------------------------------------
 declare -A datasets=(
-    ["mbigearthnet"]="linear_classification_multi_label  binary_cross_entropy  1:00:00"
-    ["mso2sat"]="linear_classification                   cross_entropy          1:00:00"
-    ["mbrickkiln"]="linear_classification                cross_entropy          1:00:00"
-    ["mforestnet"]="linear_classification                cross_entropy          1:00:00"
-    ["meurosat"]="linear_classification                  cross_entropy          1:00:00"
-    ["mpv4ger"]="linear_classification                   cross_entropy          1:00:00"
+    ["mbigearthnet"]="linear_classification_multi_label  binary_cross_entropy  8:00:00"
+    ["mso2sat"]="linear_classification                   cross_entropy          8:00:00"
+    ["mbrickkiln"]="linear_classification                cross_entropy          6:00:00"
+    ["mforestnet"]="linear_classification                cross_entropy          3:00:00"
+    ["meurosat"]="linear_classification                  cross_entropy          2:00:00"
+    ["mpv4ger"]="linear_classification                   cross_entropy          6:00:00"
 )
 
 # -----------------------------------------------------------------------------
@@ -78,6 +78,7 @@ export MAMBA_ROOT_PREFIX="/p/project1/hai_1280/micromamba"
 export WANDB_MODE=offline
 export WANDB_PROJECT="Juwels"
 export PYTHONPATH="${PROJECT_DIR}:\${PYTHONPATH}"
+export HF_HOME="/p/project1/hai_1280/hf_cache"
 
 eval "\$(${MICROMAMBA} shell hook --shell bash)"
 micromamba activate ${ENV_PATH}

@@ -43,7 +43,13 @@ def get_exp_info(hydra_config: HydraConf) -> dict[str, str]:
     cfg_hash = hashlib.sha1(
         OmegaConf.to_yaml(hydra_config).encode(), usedforsecurity=False
     ).hexdigest()[:6]
-    timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+    # Use SLURM_JOB_ID when available so all DDP ranks share the same identifier;
+    # fall back to a wall-clock timestamp for local runs.
+    slurm_job_id = os.environ.get("SLURM_JOB_ID")
+    if slurm_job_id:
+        timestamp = time.strftime("%Y%m%d") + f"_{slurm_job_id}"
+    else:
+        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
     fm = choices["encoder"]
     decoder = choices["decoder"]
     ds = choices["dataset"]
@@ -129,6 +135,15 @@ def main(cfg: DictConfig) -> None:
     encoder: Encoder = instantiate(cfg.encoder)
     encoder.load_encoder_weights(logger)
     logger.info("Built {}.".format(encoder.model_name))
+    # CARL is wavelength-aware and can handle any band subset natively.
+    # When BandPadding is not used in the preprocessing pipeline, the input
+    # tensor only contains the bands the dataset actually provides. In that
+    # case we must shrink wv_list to match — otherwise _encode_spectral sees
+    # a mismatch between the number of channels (C) and len(wv_list).
+    if hasattr(encoder, "set_wv_list_from_data_bands"):
+        data_bands = OmegaConf.to_container(cfg.dataset.bands, resolve=True)
+        encoder.set_wv_list_from_data_bands(data_bands)
+        logger.info("CARL wv_list restricted to dataset bands: %s", encoder.carl.wv_list)
 
     # prepare the decoder (segmentation/regression)
     decoder: Decoder = instantiate(
@@ -262,8 +277,9 @@ def main(cfg: DictConfig) -> None:
             trainer.load_model(cfg.ckpt_dir)
 
         trainer.train()
+        torch.distributed.barrier()
 
-    
+
     # Evaluation
     test_preprocessor = instantiate(
         cfg.preprocessing.test,
@@ -295,7 +311,8 @@ def main(cfg: DictConfig) -> None:
     else:
         model_ckpt_path = get_best_model_ckpt_path(exp_dir)
         
-    if model_ckpt_path is None and not cfg.task.trainer.model_name == "knn_probe":
+    trainer_model_name = OmegaConf.select(cfg, "task.trainer.model_name", default="")
+    if model_ckpt_path is None and trainer_model_name != "knn_probe":
         raise ValueError(f"No model checkpoint found in {exp_dir}")
     
     test_evaluator.evaluate(decoder, "test_model", model_ckpt_path)

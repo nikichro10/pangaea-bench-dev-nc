@@ -989,9 +989,11 @@ class CARLEncoder(Encoder):
             download_url=download_url,
         )
 
-        # Derive the ordered wavelength list from the selected input_bands.
-        # The order must match the channel order that BandFilter/BandPadding
-        # will produce at runtime.
+        # Build the full wavelength list for all bands declared in input_bands.
+        # When BandPadding is used (default), the preprocessor zero-fills missing
+        # bands so the tensor always has len(wv_list) channels.
+        # When BandPadding is NOT used, call set_wv_list_from_data_bands() after
+        # construction to shrink this list to the bands the dataset actually provides.
         wv_list = [
             self.BAND_WAVELENGTHS[modality][band]
             for modality, bands in input_bands.items()
@@ -1011,6 +1013,22 @@ class CARLEncoder(Encoder):
         # them from wave_list[sensor], which we bypass here.
         self.carl.wv_list = wv_list
         self.patch_size = patch_size
+
+    def set_wv_list_from_data_bands(self, data_bands: dict[str, list[str]]) -> None:
+        """Restrict wv_list to bands actually present in the dataset.
+
+        Call this when BandPadding is NOT used so CARL receives only real bands
+        with their true wavelengths rather than zero-padded phantom channels.
+        """
+        wv_list = [
+            self.BAND_WAVELENGTHS[modality][band]
+            for modality, bands in self.input_bands.items()
+            for band in bands
+            if modality in data_bands and band in data_bands[modality]
+        ]
+        if not wv_list:
+            raise ValueError("No wavelengths remain after filtering to available data bands.")
+        self.carl.wv_list = wv_list
 
     def forward(self, image: dict[str, torch.Tensor]) -> list[torch.Tensor]:
         """Extract multi-scale features for UPerNet.

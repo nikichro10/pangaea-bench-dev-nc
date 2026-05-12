@@ -40,7 +40,7 @@ launch_job() {
     local -r job_name="carl_geoseg_${decoder}_${dataset}"
     local -r sbatch_script="${dataset}_${decoder}_carl_geoseg.sh"
 
-    local cmd="torchrun --standalone --nnodes=1 --nproc_per_node=1 pangaea/run.py"
+    local cmd="torchrun --standalone --nnodes=1 --nproc_per_node=4 pangaea/run.py"
     cmd+=" --config-name=train"
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${ENCODER}"
@@ -64,7 +64,7 @@ launch_job() {
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=48
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:4
 #SBATCH --time=${time_limit}
 #SBATCH --output=${LOG_DIR}/${decoder}_${dataset}_%j.out
 #SBATCH --error=${LOG_DIR}/${decoder}_${dataset}_%j.err
@@ -76,6 +76,7 @@ export MAMBA_ROOT_PREFIX="/p/project1/hai_1280/micromamba"
 export WANDB_MODE=offline
 export WANDB_PROJECT="Juwels"
 export PYTHONPATH="${PROJECT_DIR}:\${PYTHONPATH}"
+export HF_HOME="/p/project1/hai_1280/hf_cache"
 
 eval "\$(${MICROMAMBA} shell hook --shell bash)"
 micromamba activate ${ENV_PATH}
