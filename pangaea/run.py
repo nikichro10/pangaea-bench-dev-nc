@@ -135,15 +135,18 @@ def main(cfg: DictConfig) -> None:
     encoder: Encoder = instantiate(cfg.encoder)
     encoder.load_encoder_weights(logger)
     logger.info("Built {}.".format(encoder.model_name))
-    # CARL is wavelength-aware and can handle any band subset natively.
-    # When BandPadding is not used in the preprocessing pipeline, the input
-    # tensor only contains the bands the dataset actually provides. In that
-    # case we must shrink wv_list to match — otherwise _encode_spectral sees
-    # a mismatch between the number of channels (C) and len(wv_list).
-    if hasattr(encoder, "set_wv_list_from_data_bands"):
+    # CARL and DOFA are wavelength-aware and can handle any band subset natively.
+    # When BandPadding is NOT used, the input tensor only contains the bands the
+    # dataset actually provides, so wv_list must be shrunk to match — otherwise
+    # the wavelength-conditioned patch embed sees a channel/wv_list length mismatch.
+    # When BandPadding IS used, the tensor is already padded to the full encoder
+    # band set, so wv_list must stay at its full length.
+    uses_band_padding = "BandPadding" in OmegaConf.to_yaml(cfg.preprocessing)
+    if not uses_band_padding and hasattr(encoder, "set_wv_list_from_data_bands"):
         data_bands = OmegaConf.to_container(cfg.dataset.bands, resolve=True)
         encoder.set_wv_list_from_data_bands(data_bands)
-        logger.info("CARL wv_list restricted to dataset bands: %s", encoder.carl.wv_list)
+        wv_list_log = encoder.wv_list if hasattr(encoder, "wv_list") else encoder.carl.wv_list
+        logger.info("%s wv_list restricted to dataset bands: %s", type(encoder).__name__, wv_list_log)
 
     # prepare the decoder (segmentation/regression)
     decoder: Decoder = instantiate(

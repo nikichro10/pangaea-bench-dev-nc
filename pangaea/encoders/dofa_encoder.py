@@ -281,6 +281,21 @@ class DOFA_Encoder(Encoder):
 
         return output
 
+    def set_wv_list_from_data_bands(self, data_bands: dict[str, list[str]]) -> None:
+        """Restrict wv_list to bands actually present in the dataset.
+        Call this when BandPadding is NOT used so DOFA receives only real bands
+        with their true wavelengths rather than zero-padded phantom channels.
+        """
+        wv_list = [
+            self.wave_list[m][bi]
+            for m, b in self.input_bands.items()
+            for bi in b
+            if m in data_bands and bi in data_bands[m]
+        ]
+        if not wv_list:
+            raise ValueError("No wavelengths remain after filtering to available data bands.")
+        self.wv_list = wv_list
+
     def load_encoder_weights(self, logger: Logger) -> None:
         pretrained_model = torch.load(self.encoder_weights, map_location="cpu", weights_only=False)
         k = pretrained_model.keys()

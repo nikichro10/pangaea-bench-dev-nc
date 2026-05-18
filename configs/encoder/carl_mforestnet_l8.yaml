@@ -1,0 +1,65 @@
+_target_: pangaea.encoders.carl_encoder.CARLEncoder
+
+encoder_weights: ./pretrained_models/carl_ssl_checkpoint.ckpt
+download_url: https://zenodo.org/records/18671944/files/ssl_checkpoint_carl.ckpt
+
+input_size: 224
+embed_dim: 768      # EVA02-base spatial encoder output dim
+output_dim: 768
+patch_size: 8
+
+# 4 intermediate outputs from the 8-block spatial encoder (0-indexed)
+output_layers:
+  - 1
+  - 3
+  - 5
+  - 7
+
+input_bands:
+  optical:
+    - L8_B2
+    - L8_B3
+    - L8_B4
+    - L8_B5
+    - L8_B6
+    - L8_B7
+
+# True Landsat-8 center wavelengths (µm) for mforestnet_l8.
+# Source: DOFA wave_list / Landsat-8 spectral characteristics.
+# Used instead of S2 defaults so CARL's spectral encoder sees the actual
+# sensor wavelengths rather than the approximate S2 equivalents.
+band_wavelength_overrides:
+  optical:
+    L8_B2: 0.482   # L8 Blue  (S2 B2 default: 0.490)
+    L8_B3: 0.562   # L8 Green (S2 B3 default: 0.560)
+    L8_B4: 0.655   # L8 Red   (S2 B4 default: 0.665)
+    L8_B5: 0.865   # L8 NIR   (S2 B8 default: 0.842)
+    L8_B6: 1.609   # L8 SWIR1 (S2 B11 default: 1.610)
+    L8_B7: 2.201   # L8 SWIR2 (S2 B12 default: 2.200)
+
+# Spectral encoder (wavelength-aware transformer)
+spec_encoder_kwargs:
+  embed_dim: 384
+  depth: 8
+  num_heads: 6
+  layer_scale: 0.0001
+  pos_enc_sigma: 3
+  n_queries: 8
+  qkv_bias: true
+  ffn_bias: true
+  drop_path_rate: 0.
+  proj_drop: 0.
+  drop: 0.
+  attn_drop: 0.
+
+# Spatial encoder (EVA02-base, first 8 blocks)
+spat_encoder_kwargs:
+  model_name: timm/eva02_base_patch14_224.mim_in22k
+  depth: 8
+  model_kwargs:
+    drop_rate: 0.
+    pos_drop_rate: 0.
+    patch_drop_rate: 0.
+    proj_drop_rate: 0.
+    attn_drop_rate: 0.
+    drop_path_rate: 0.
