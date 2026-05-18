@@ -956,6 +956,7 @@ class CARLEncoder(Encoder):
         patch_size: int,
         spec_encoder_kwargs: dict,
         spat_encoder_kwargs: dict,
+        band_wavelength_overrides: dict[str, dict[str, float]] | None = None,
         **kwargs,
     ) -> None:
         """
@@ -974,6 +975,11 @@ class CARLEncoder(Encoder):
             patch_size: Spatial patch size (8 in the default CARL config).
             spec_encoder_kwargs: Forwarded to ``SpectralEncoder``.
             spat_encoder_kwargs: Forwarded to ``TimmWrapper``.
+            band_wavelength_overrides: Sensor-specific central wavelength overrides (µm).
+                Mirrors the structure of ``BAND_WAVELENGTHS``, e.g.
+                ``{"optical": {"B2": 0.485, "B4": 0.660}}``.
+                Only the listed bands are overridden; all others keep S2 defaults.
+                Use this to pass true sensor wavelengths for non-S2 datasets.
         """
         super().__init__(
             model_name="carl",
@@ -989,13 +995,22 @@ class CARLEncoder(Encoder):
             download_url=download_url,
         )
 
+        # Build an instance-level wavelength table by merging sensor-specific
+        # overrides on top of the S2 class defaults.  This avoids mutating the
+        # class-level dict which would affect all instances.
+        import copy
+        self._band_wavelengths = copy.deepcopy(self.BAND_WAVELENGTHS)
+        if band_wavelength_overrides:
+            for modality, band_map in band_wavelength_overrides.items():
+                self._band_wavelengths.setdefault(modality, {}).update(band_map)
+
         # Build the full wavelength list for all bands declared in input_bands.
         # When BandPadding is used (default), the preprocessor zero-fills missing
         # bands so the tensor always has len(wv_list) channels.
         # When BandPadding is NOT used, call set_wv_list_from_data_bands() after
         # construction to shrink this list to the bands the dataset actually provides.
         wv_list = [
-            self.BAND_WAVELENGTHS[modality][band]
+            self._band_wavelengths[modality][band]
             for modality, bands in input_bands.items()
             for band in bands
         ]
@@ -1021,7 +1036,7 @@ class CARLEncoder(Encoder):
         with their true wavelengths rather than zero-padded phantom channels.
         """
         wv_list = [
-            self.BAND_WAVELENGTHS[modality][band]
+            self._band_wavelengths[modality][band]
             for modality, bands in self.input_bands.items()
             for band in bands
             if modality in data_bands and band in data_bands[modality]

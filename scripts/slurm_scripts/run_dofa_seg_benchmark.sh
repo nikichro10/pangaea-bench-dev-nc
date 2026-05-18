@@ -147,7 +147,7 @@ declare -A datasets=(
 # Use "all" to run everything, or list specific dataset names.
 # Example: RUN_DATASETS="hlsburnscars sen1floods11 mados"
 # -----------------------------------------------------------------------------
-RUN_DATASETS="pastis_optical"  # all, or space-separated list of dataset keys
+RUN_DATASETS="sen1floods11 hlsburnscars"  # all, or space-separated list of dataset keys
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS

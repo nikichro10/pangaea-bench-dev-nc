@@ -15,7 +15,6 @@ output_layers:
   - 5
   - 7
 
-# All S2 optical bands; BandPadding fills missing ones with zeros
 input_bands:
   optical:
     - B1

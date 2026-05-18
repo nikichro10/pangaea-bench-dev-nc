@@ -14,11 +14,7 @@ mkdir -p "$LOG_DIR"
 
 # Format: "dataset  decoder  preprocessing  criterion  time  [extra_args]"
 declare -A jobs=(
-    ["hlsburnscars"]="hlsburnscars         seg_upernet          seg_default_nopad     cross_entropy  6:00:00"
-    ["sen1floods11"]="sen1floods11         seg_upernet          seg_default_nopad     cross_entropy  6:00:00"
-    ["ai4smallfarms"]="ai4smallfarms       seg_upernet          seg_default_nopad     cross_entropy  6:00:00"
     ["fivebillionpixels"]="fivebillionpixels seg_upernet         seg_default_nopad     cross_entropy  24:00:00"
-    ["spacenet7cd"]="spacenet7cd          seg_siamupernet_conc  seg_default_nopad     cross_entropy  8:00:00"
     ["mados"]="mados                      seg_upernet          seg_focus_crop_nopad  cross_entropy  8:00:00"
     ["dynamicen"]="dynamicen              seg_upernet_mt_ltae  seg_default_nopad     cross_entropy  12:00:00"
     ["pastis_optical"]="pastis_optical     seg_upernet_mt_ltae  seg_resize_nopad      cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
@@ -44,6 +40,7 @@ for key in "${!jobs[@]}"; do
     cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
+    cmd+=" task.trainer.ckpt_interval=999"
     [ "${#extra_args[@]}" -gt 0 ] && cmd+=" ${extra_args[*]}"
 
     printf 'Launching [%s]\n' "$key"
