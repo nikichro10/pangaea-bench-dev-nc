@@ -46,7 +46,7 @@ launch_job() {
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${ENCODER}"
     cmd+=" decoder=${decoder}"
-    cmd+=" preprocessing=seg_default"
+    cmd+=" preprocessing=seg_default_norm_no_pad"
     cmd+=" criterion=${criterion}"
     cmd+=" task=segmentation"
     cmd+=" finetune=false"

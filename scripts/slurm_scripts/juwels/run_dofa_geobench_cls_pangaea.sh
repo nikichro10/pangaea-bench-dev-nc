@@ -45,7 +45,7 @@ launch_job() {
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${ENCODER}"
     cmd+=" decoder=cls_linear"
-    cmd+=" preprocessing=cls_resize"
+    cmd+=" preprocessing=cls_resize_norm_no_pad"
     cmd+=" criterion=${criterion}"
     cmd+=" task=${task}"
     cmd+=" task.trainer.n_epochs=50"
