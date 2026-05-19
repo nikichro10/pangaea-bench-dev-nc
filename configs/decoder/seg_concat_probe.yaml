@@ -1,0 +1,7 @@
+_target_: pangaea.decoders.seg_concat_probe.SegConcatProbe
+
+encoder: null
+num_classes: ${dataset.num_classes}
+finetune: ${finetune}
+channels: 256
+upsample_mode: bilinear

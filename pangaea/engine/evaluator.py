@@ -395,6 +395,9 @@ class SegEvaluator(Evaluator):
         exp_dir (str | Path): Directory for saving experiment results.
         device (torch.device): Device to run the evaluation on.
         use_wandb (bool): Flag to indicate whether to use Weights and Biases for logging.
+        save_preds_dir (str | Path | None): If set, saves a PNG grid of (input, GT, pred)
+            samples to this directory after each evaluation pass. Useful for visually
+            checking upsampling artifacts (e.g. checkerboard patterns).
     Methods:
         evaluate(model, model_name='model', model_ckpt_path=None, epoch=None):
             Evaluates the given model on the validation dataset and computes metrics.
@@ -415,8 +418,10 @@ class SegEvaluator(Evaluator):
             inference_mode: str = 'sliding',
             sliding_inference_batch: int = None,
             use_wandb: bool = False,
+            save_preds_dir: str | Path | None = None,
     ):
         super().__init__(val_loader, exp_dir, device, inference_mode, sliding_inference_batch, use_wandb)
+        self.save_preds_dir = Path(save_preds_dir) if save_preds_dir else None
 
     def _collect_viz_samples(self, raw_image, logits, data, batch_idx, viz_samples, max_viz):
         """Collect up to max_viz visualization samples from a single batch."""
@@ -477,6 +482,28 @@ class SegEvaluator(Evaluator):
         _wandb.log({f"{self.split}_seg_viz": _wandb.Image(fig), "epoch": int(epoch)})
         plt.close(fig)
 
+    def _save_preds_to_disk(self, viz_samples, epoch, max_viz):
+        """Save a PNG grid of (input, GT mask, pred mask) rows to save_preds_dir."""
+        self.save_preds_dir.mkdir(parents=True, exist_ok=True)
+        n_viz = min(len(viz_samples), max_viz)
+        fig, axes = plt.subplots(n_viz, 3, figsize=(12, 4 * n_viz))
+        if n_viz == 1:
+            axes = np.expand_dims(axes, 0)
+
+        for i, (img_rgb, pred_mask, gt_mask, label) in enumerate(viz_samples[:n_viz]):
+            axes[i, 0].imshow(img_rgb);             axes[i, 0].set_title("Input");  axes[i, 0].axis("off")
+            axes[i, 1].imshow(gt_mask,   cmap="tab20", vmin=0, vmax=max(1, self.num_classes - 1))
+            axes[i, 1].set_title("GT");   axes[i, 1].axis("off")
+            axes[i, 2].imshow(pred_mask, cmap="tab20", vmin=0, vmax=max(1, self.num_classes - 1))
+            axes[i, 2].set_title("Pred"); axes[i, 2].axis("off")
+
+        plt.tight_layout()
+        epoch_tag = f"epoch{int(epoch):04d}" if epoch is not None else "test"
+        out_path = self.save_preds_dir / f"{self.split}_{epoch_tag}.png"
+        fig.savefig(out_path, dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        self.logger.info(f"Saved prediction visualizations to {out_path}")
+
     @torch.no_grad()
     def evaluate(self, model, model_name='model', model_ckpt_path=None, epoch=None):
         t = time.time()
@@ -525,18 +552,25 @@ class SegEvaluator(Evaluator):
             )
             confusion_matrix += count.view(self.num_classes, self.num_classes)
 
-            if self.use_wandb and self.rank == 0 and len(viz_samples) < max_viz:
+            need_viz = (self.use_wandb or self.save_preds_dir is not None) and self.rank == 0
+            if need_viz and len(viz_samples) < max_viz:
                 self._collect_viz_samples(raw_image, logits, data, batch_idx, viz_samples, max_viz)
 
         torch.distributed.all_reduce(confusion_matrix, op=torch.distributed.ReduceOp.SUM)
         metrics = self.compute_metrics(confusion_matrix.cpu())
         self.log_metrics(metrics)
 
-        if self.use_wandb and self.rank == 0 and epoch is not None and int(epoch) % 20 == 0 and viz_samples:
-            try:
-                self._log_viz_to_wandb(viz_samples, epoch, max_viz)
-            except Exception as e:
-                self.logger.warning(f"Failed to log segmentation visualizations: {e}")
+        if self.rank == 0 and viz_samples:
+            if self.use_wandb and epoch is not None and int(epoch) % 20 == 0:
+                try:
+                    self._log_viz_to_wandb(viz_samples, epoch, max_viz)
+                except Exception as e:
+                    self.logger.warning(f"Failed to log segmentation visualizations: {e}")
+            if self.save_preds_dir is not None and (epoch is None or int(epoch) % 20 == 0):
+                try:
+                    self._save_preds_to_disk(viz_samples, epoch, max_viz)
+                except Exception as e:
+                    self.logger.warning(f"Failed to save prediction visualizations: {e}")
 
         used_time = time.time() - t
 
