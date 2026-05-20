@@ -1,24 +1,18 @@
 #!/bin/bash
 
-# CARL without BandPadding experiment.
-# Tests whether giving CARL only the actually available bands (no zero-padding)
-# improves performance. set_wv_list_from_data_bands() in run.py ensures the
-# spectral encoder's wavelength list matches the reduced channel count.
+# CARL nopad extra: SpaceNet7 and AI4SmallFarms with UPerNet, no BandPadding.
 
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/carl_nopad"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
 readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/carl_nopad"
-readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c05s03"
 
 mkdir -p "$LOG_DIR"
 
 # Format: "dataset  decoder  preprocessing  criterion  time  [extra_args]"
 declare -A jobs=(
-    ["fivebillionpixels"]="fivebillionpixels seg_upernet         seg_default_nopad     cross_entropy  24:00:00"
-    ["mados"]="mados                      seg_upernet          seg_focus_crop_nopad  cross_entropy  8:00:00"
-    ["dynamicen"]="dynamicen              seg_upernet_mt_ltae  seg_default_nopad     cross_entropy  12:00:00"
-    ["pastis_optical"]="pastis_optical     seg_upernet_mt_ltae  seg_resize_nopad      cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["croptypemapping_optical"]="croptypemapping_optical seg_upernet_mt_ltae seg_resize_nopad cross_entropy 12:00:00"
+    ["spacenet7"]="spacenet7     seg_upernet  seg_default_nopad  dice           8:00:00"
+    ["ai4smallfarms"]="ai4smallfarms seg_upernet  seg_default_nopad  dice           24:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
 )
 
 for key in "${!jobs[@]}"; do
@@ -75,4 +69,4 @@ EOF
     rm "$sbatch_script"
 done
 
-echo "All carl_nopad jobs queued."
+echo "All carl_nopad_extra jobs queued."
