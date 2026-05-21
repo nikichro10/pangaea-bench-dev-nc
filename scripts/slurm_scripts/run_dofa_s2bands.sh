@@ -17,21 +17,21 @@ readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03"
 
 mkdir -p "$LOG_DIR"
 
-# Format: "dataset  decoder  preprocessing  criterion  time  [extra_args]"
+# Format: "dataset  decoder  preprocessing  criterion  task  time  [extra_args]"
 declare -A jobs=(
-    ["fivebillionpixels"]="fivebillionpixels   seg_upernet          seg_default_pad    cross_entropy  24:00:00"
-    ["hlsburnscars"]="hlsburnscars             seg_upernet          seg_default_pad    cross_entropy  8:00:00"
-    ["sen1floods11"]="sen1floods11             seg_upernet          seg_default_pad    cross_entropy  8:00:00"
-    ["mados"]="mados                          seg_upernet          seg_focus_crop_pad cross_entropy  8:00:00"
-    ["ai4smallfarms"]="ai4smallfarms           seg_upernet          seg_default_pad    dice           24:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
-    ["dynamicen"]="dynamicen                  seg_upernet_mt_ltae  seg_default_pad    cross_entropy  12:00:00"
-    ["pastis_optical"]="pastis_optical         seg_upernet_mt_ltae  seg_resize_pad     cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["croptypemapping_optical"]="croptypemapping_optical seg_upernet_mt_ltae seg_resize_pad cross_entropy 12:00:00 task.evaluator.inference_mode=whole"
-    ["spacenet7"]="spacenet7                  seg_upernet          seg_default_pad    dice           12:00:00"
+    ["fivebillionpixels"]="fivebillionpixels   seg_upernet          seg_default_pad    cross_entropy  segmentation    24:00:00"
+    ["hlsburnscars"]="hlsburnscars             seg_upernet          seg_default_pad    cross_entropy  segmentation    8:00:00"
+    ["sen1floods11"]="sen1floods11             seg_upernet          seg_default_pad    cross_entropy  segmentation    8:00:00"
+    ["mados"]="mados                          seg_upernet          seg_focus_crop_pad cross_entropy  segmentation    8:00:00"
+    ["ai4smallfarms"]="ai4smallfarms           seg_upernet          seg_default_pad    dice           segmentation    24:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["dynamicen"]="dynamicen                  seg_upernet_mt_ltae  seg_default_pad    cross_entropy  segmentation    12:00:00"
+    ["pastis"]="pastis                         seg_upernet_mt_ltae  seg_resize_pad     cross_entropy  segmentation    12:00:00 task.evaluator.inference_mode=whole"
+    ["croptypemapping"]="croptypemapping        seg_upernet_mt_ltae  seg_resize_pad     cross_entropy  segmentation    12:00:00 task.evaluator.inference_mode=whole"
+    ["spacenet7cd"]="spacenet7cd               seg_siamupernet_conc seg_default_pad    dice           change_detection 8:00:00"
 )
 
 for key in "${!jobs[@]}"; do
-    read -r dataset decoder preprocessing criterion time_limit remainder <<< "${jobs[$key]}"
+    read -r dataset decoder preprocessing criterion task time_limit remainder <<< "${jobs[$key]}"
     read -ra extra_args <<< "$remainder"
 
     base_dataset="${dataset%_optical}"
@@ -45,7 +45,7 @@ for key in "${!jobs[@]}"; do
     cmd+=" decoder=${decoder}"
     cmd+=" preprocessing=${preprocessing}"
     cmd+=" criterion=${criterion}"
-    cmd+=" task=segmentation"
+    cmd+=" task=${task}"
     cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"

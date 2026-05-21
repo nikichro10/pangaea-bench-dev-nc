@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofa_seg"
 readonly ENCODER="dofa"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -132,10 +132,8 @@ declare -A datasets=(
     ["sen1floods11"]="segmentation    seg_upernet          cross_entropy  6:00:00"
     ["mados"]="segmentation          seg_upernet          cross_entropy  8:00:00"
     ["pastis"]="segmentation         seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["pastis_optical"]="segmentation seg_upernet_mt_ltae cross_entropy 12:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["croptypemapping_optical"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
     ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
@@ -147,7 +145,7 @@ declare -A datasets=(
 # Use "all" to run everything, or list specific dataset names.
 # Example: RUN_DATASETS="hlsburnscars sen1floods11 mados"
 # -----------------------------------------------------------------------------
-RUN_DATASETS="sen1floods11 hlsburnscars"  # all, or space-separated list of dataset keys
+RUN_DATASETS="all"  # all, or space-separated list of dataset keys
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS

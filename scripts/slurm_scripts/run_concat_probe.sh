@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# SegConcatProbe experiment with DOFA and CARL.
-# Multi-scale probe (1.64M params) between SegLinearProbe (0.008M)
+# MLPFusionDecoder experiment with DOFA and CARL.
+# Multi-scale probe (~0.83M params, channels=128) between SegLinearProbe (0.008M)
 # and UPerNet (39M). Encoder is frozen — only projection/fusion/cls trained.
 #
 # Datasets: sen1floods11, hlsburnscars, mados, spacenet7 (all non-temporal)
@@ -38,7 +38,7 @@ for key in "${!jobs[@]}"; do
     cmd+=" --config-name=train"
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${encoder}"
-    cmd+=" decoder=seg_concat_probe"
+    cmd+=" decoder=seg_mlp_fusion"
     cmd+=" preprocessing=${preprocessing}"
     cmd+=" criterion=${criterion}"
     cmd+=" task=segmentation"

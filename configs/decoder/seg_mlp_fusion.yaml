@@ -1,7 +1,7 @@
-_target_: pangaea.decoders.seg_concat_probe.SegConcatProbe
+_target_: pangaea.decoders.seg_mlp_fusion.MLPFusionDecoder
 
 encoder: null
 num_classes: ${dataset.num_classes}
 finetune: ${finetune}
-channels: 256
+channels: 128
 upsample_mode: bilinear

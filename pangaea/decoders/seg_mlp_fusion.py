@@ -11,13 +11,6 @@ _ALIGN_CORNERS_MODES = {"bilinear", "bicubic"}
 
 
 def _build_transposed_upsample(num_classes: int, scale: int) -> nn.Sequential:
-    """Stack stride-2 transposed convs to upsample by `scale`.
-
-    Uses kernel_size=4, stride=2, padding=1 per step — the standard choice
-    that is divisible (4 % 2 == 0) to keep checkerboard minimal, while still
-    being a learned upsampling that can be compared against bilinear.
-    `scale` must be a power of 2 (16 for DOFA, not valid for Panopticon patch_size=14).
-    """
     if scale <= 0 or (scale & (scale - 1)) != 0:
         raise ValueError(
             f"transposed_conv upsampling requires scale to be a power of 2, got {scale}. "
@@ -30,27 +23,19 @@ def _build_transposed_upsample(num_classes: int, scale: int) -> nn.Sequential:
     ])
 
 
-class SegConcatProbe(Decoder):
-    """Multi-scale concatenation probe for segmentation.
+class MLPFusionDecoder(Decoder):
+    """Multi-scale MLP fusion decoder for segmentation.
 
-    Grabs the N feature maps already returned by the encoder (one per
-    output_layer), projects each to `channels` with a 1x1 conv, concatenates
-    them, fuses with a 1x1 + 3x3 conv pair, classifies with a final 1x1 conv,
-    and upsamples once to the target resolution.
-
-    The encoder is always frozen.  Only the projection, fusion, and
-    classification convs are trained — making this a lean multi-scale probe
-    that sits between SegLinearProbe and UPerNet in capacity.
+    Projects each encoder output layer to `channels` with a 1x1 conv,
+    concatenates them, fuses with a 1x1 + 3x3 conv pair, classifies with a
+    final 1x1 conv, and upsamples to the target resolution. Encoder is frozen.
 
     Args:
         encoder: frozen backbone; supplies output_layers / output_dim / patch_size.
         num_classes: number of segmentation classes.
-        finetune: passed through to Decoder base (must be False for frozen).
-        channels: projection width C; concat gives N*C channels (default 256).
-        upsample_mode: upsampling strategy for the final step.
-            "bilinear" (default), "bicubic", "nearest" — passed to F.interpolate.
-            "transposed_conv" — learned stride-2 ConvTranspose2d stack;
-            requires encoder.patch_size to be a power of 2 (e.g. DOFA patch_size=16).
+        finetune: passed through to Decoder base (must be False for frozen encoder).
+        channels: projection width; concat gives N*channels input to fusion (default 128).
+        upsample_mode: "bilinear" (default), "bicubic", "nearest", or "transposed_conv".
     """
 
     def __init__(
@@ -58,12 +43,12 @@ class SegConcatProbe(Decoder):
         encoder: Encoder,
         num_classes: int,
         finetune: bool,
-        channels: int = 256,
+        channels: int = 128,
         upsample_mode: str = "bilinear",
     ):
         super().__init__(encoder=encoder, num_classes=num_classes, finetune=finetune)
 
-        self.model_name = "SegConcatProbe"
+        self.model_name = "MLPFusionDecoder"
         self.upsample_mode = upsample_mode
 
         for param in self.encoder.parameters():
@@ -71,13 +56,11 @@ class SegConcatProbe(Decoder):
 
         n_layers = len(encoder.output_layers)
 
-        # One 1x1 projection per encoder output layer
         self.projections = nn.ModuleList([
             nn.Conv2d(dim, channels, kernel_size=1)
             for dim in encoder.output_dim
         ])
 
-        # Channel fusion (concat → channels) + spatial smoothing
         self.fusion = nn.Sequential(
             nn.Conv2d(n_layers * channels, channels, kernel_size=1),
             nn.ReLU(inplace=True),
@@ -85,10 +68,8 @@ class SegConcatProbe(Decoder):
             nn.ReLU(inplace=True),
         )
 
-        # Classification head — no activation after
         self.cls_head = nn.Conv2d(channels, num_classes, kernel_size=1)
 
-        # Learned upsampling (transposed_conv only; interpolation modes use F.interpolate)
         if upsample_mode == "transposed_conv":
             self.upsample_layer = _build_transposed_upsample(num_classes, encoder.patch_size)
         else:
@@ -100,19 +81,17 @@ class SegConcatProbe(Decoder):
         with torch.no_grad():
             feats = self.encoder({k: v[:, :, 0, :, :] for k, v in img.items()})
 
-        # Project each layer, apply ReLU, then concatenate
         projected = [F.relu(proj(f), inplace=True) for proj, f in zip(self.projections, feats)]
-        x = torch.cat(projected, dim=1)   # [B, N*C, H_grid, W_grid]
+        x = torch.cat(projected, dim=1)
 
-        x = self.fusion(x)                # [B, C, H_grid, W_grid]
-        x = self.cls_head(x)              # [B, num_classes, H_grid, W_grid]
+        x = self.fusion(x)
+        x = self.cls_head(x)
 
         if output_shape is None:
             output_shape = img[list(img.keys())[0]].shape[-2:]
 
         if self.upsample_layer is not None:
             x = self.upsample_layer(x)
-            # Safety fallback if transposed conv output doesn't match target exactly
             if tuple(x.shape[-2:]) != tuple(output_shape):
                 x = F.interpolate(x, size=output_shape, mode="bilinear", align_corners=False)
         else:
