@@ -1,0 +1,85 @@
+_target_: pangaea.encoders.copernicus_fm_encoder.CopernicusFM_Encoder
+encoder_weights: ./pretrained_models/CopernicusFM_ViT_base_varlang_e100.pth
+download_url: https://huggingface.co/wangyi111/Copernicus-FM/resolve/main/CopernicusFM_ViT_base_varlang_e100.pth
+
+# ViT-Base architecture
+embed_dim: 768
+depth: 12
+num_heads: 12
+patch_size: 16
+wv_planes: 128
+mlp_ratio: 4.0
+
+input_size: 224
+input_bands: ${dataset.bands}
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+output_dim: 768
+
+# Central wavelengths in nm
+wave_list:
+  optical:
+    B1: 443
+    B2: 490
+    B3: 560
+    B4: 665
+    B5: 705
+    B6: 740
+    B7: 783
+    B8: 842
+    B8A: 865
+    B9: 945
+    B10: 1375
+    B11: 1610
+    B12: 2190
+    L8_B2: 482
+    L8_B3: 562
+    L8_B4: 655
+    L8_B5: 865
+    L8_B6: 1609
+    L8_B7: 2201
+  sar:
+    # Sentinel-1 C-band: ~5.405 GHz → λ ≈ 55,500,000 nm
+    VV: 55500000
+    VH: 55500000
+    ASC_VV: 55500000
+    ASC_VH: 55500000
+    DSC_VV: 55500000
+    DSC_VH: 55500000
+    VV-VH: 55500000
+
+# Bandwidths in nm
+bandwidth_list:
+  optical:
+    B1: 20
+    B2: 65
+    B3: 35
+    B4: 30
+    B5: 15
+    B6: 15
+    B7: 20
+    B8: 115
+    B8A: 20
+    B9: 20
+    B10: 30
+    B11: 90
+    B12: 180
+    L8_B2: 60
+    L8_B3: 57
+    L8_B4: 37
+    L8_B5: 28
+    L8_B6: 85
+    L8_B7: 187
+  sar:
+    # Rough pulse bandwidth in wavelength-equivalent nm
+    VV: 1000000
+    VH: 1000000
+    ASC_VV: 1000000
+    ASC_VH: 1000000
+    DSC_VV: 1000000
+    DSC_VH: 1000000
+    VV-VH: 1000000

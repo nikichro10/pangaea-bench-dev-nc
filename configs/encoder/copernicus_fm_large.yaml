@@ -1,0 +1,83 @@
+_target_: pangaea.encoders.copernicus_fm_encoder.CopernicusFM_Encoder
+encoder_weights: ./pretrained_models/CopernicusFM_ViT_large_varlang_e100.pth
+download_url: https://huggingface.co/wangyi111/Copernicus-FM/resolve/main/CopernicusFM_ViT_large_varlang_e100.pth
+
+# ViT-Large architecture
+embed_dim: 1024
+depth: 24
+num_heads: 16
+patch_size: 16
+wv_planes: 128
+mlp_ratio: 4.0
+
+input_size: 224
+input_bands: ${dataset.bands}
+
+output_layers:
+  - 5
+  - 11
+  - 17
+  - 23
+output_dim: 1024
+
+# Central wavelengths in nm (same as base)
+wave_list:
+  optical:
+    B1: 443
+    B2: 490
+    B3: 560
+    B4: 665
+    B5: 705
+    B6: 740
+    B7: 783
+    B8: 842
+    B8A: 865
+    B9: 945
+    B10: 1375
+    B11: 1610
+    B12: 2190
+    L8_B2: 482
+    L8_B3: 562
+    L8_B4: 655
+    L8_B5: 865
+    L8_B6: 1609
+    L8_B7: 2201
+  sar:
+    VV: 55500000
+    VH: 55500000
+    ASC_VV: 55500000
+    ASC_VH: 55500000
+    DSC_VV: 55500000
+    DSC_VH: 55500000
+    VV-VH: 55500000
+
+# Bandwidths in nm (same as base)
+bandwidth_list:
+  optical:
+    B1: 20
+    B2: 65
+    B3: 35
+    B4: 30
+    B5: 15
+    B6: 15
+    B7: 20
+    B8: 115
+    B8A: 20
+    B9: 20
+    B10: 30
+    B11: 90
+    B12: 180
+    L8_B2: 60
+    L8_B3: 57
+    L8_B4: 37
+    L8_B5: 28
+    L8_B6: 85
+    L8_B7: 187
+  sar:
+    VV: 1000000
+    VH: 1000000
+    ASC_VV: 1000000
+    ASC_VH: 1000000
+    DSC_VV: 1000000
+    DSC_VH: 1000000
+    VV-VH: 1000000
