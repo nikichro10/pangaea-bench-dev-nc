@@ -28,6 +28,31 @@ def MultiStepLR(
     )
 
 
+def OneCycleLR(
+    optimizer: Optimizer, total_iters: int, max_lr: float
+) -> LRScheduler:
+    """OneCycleLR with pct_start=0 (no warmup) and cosine annealing.
+
+    Matches the Panopticon paper training schedule: LR decays from max_lr
+    to ~0 following a cosine curve starting immediately at step 0.
+
+    Args:
+        optimizer: The optimizer to schedule.
+        total_iters: Total number of training iterations.
+        max_lr: Peak (starting) learning rate — set equal to optimizer.lr.
+
+    Returns:
+        LRScheduler: OneCycleLR scheduler.
+    """
+    return torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=max_lr,
+        total_steps=total_iters,
+        pct_start=0.0,
+        anneal_strategy="cos",
+    )
+
+
 def CosineAnnealingLR(
     optimizer: Optimizer, total_iters: int
 ) -> LRScheduler:

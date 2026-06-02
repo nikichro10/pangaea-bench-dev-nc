@@ -88,6 +88,7 @@ launch_job() {
 
 export HYDRA_FULL_ERROR=1
 export GEO_BENCH_DIR="${GEO_BENCH_DIR}"
+export TORCH_HOME="/p/project1/hai_1280/hf_cache"
 export MAMBA_ROOT_PREFIX="/p/project1/hai_1280/micromamba"
 export WANDB_MODE=offline
 export WANDB_PROJECT="Juwels"

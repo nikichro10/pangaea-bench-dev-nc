@@ -1,0 +1,4 @@
+_target_: pangaea.utils.schedulers.OneCycleLR
+optimizer: null
+total_iters: null
+max_lr: 1e-4

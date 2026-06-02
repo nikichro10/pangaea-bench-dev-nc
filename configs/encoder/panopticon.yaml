@@ -1,50 +1,36 @@
 _target_: pangaea.encoders.panopticon_encoder.PanopticonEncoder
-
 encoder_weights: ./pretrained_models/panopticon_vitb14_teacher.pth
-download_url: https://huggingface.co/lewaldm/panopticon/resolve/c8c2bb9555819e8b2bcedf5b3b00e3bf531554e7/panopticon_vitb14_teacher.pth
+download_url: https://huggingface.co/lewaldm/panopticon/resolve/main/panopticon_vitb14_teacher.pth
 
 input_size: 224
 embed_dim: 768
-output_dim: 768
 patch_size: 14
 attn_dim: 2304
-use_norm: False
+use_norm: false
 
 input_bands: ${dataset.bands}
 
-output_layers:
-  - 3
-  - 5
-  - 7
-  - 11
-
-# Wavelengths in NANOMETRES (Panopticon convention — not µm like DOFA/CARL).
-# SAR: negative integers per Panopticon sentinel1.yaml convention.
-# Mapping: VV=-1, VH=-2, ASC_VV=-3, ASC_VH=-4, DSC_VV=-5, DSC_VH=-6
-# TODO: verify SAR ID order against panopticon/configs/sentinel1.yaml
 wave_list:
   optical:
-    # Sentinel-2
-    B1: 443
-    B2: 490
-    B3: 560
-    B4: 665
-    B5: 705
-    B6: 740
-    B7: 783
-    B8: 832
-    B8A: 864
-    B9: 945
-    B10: 1373
-    B11: 1610
-    B12: 2200
-    # Landsat-8
-    L8_B2: 482
-    L8_B3: 562
-    L8_B4: 655
-    L8_B5: 865
-    L8_B6: 1609
-    L8_B7: 2201
+    B1: 442.923
+    B2: 492.997
+    B3: 559.599
+    B4: 664.630
+    B5: 704.006
+    B6: 740.552
+    B7: 782.419
+    B8: 827.539
+    B8A: 864.780
+    B9: 945.029
+    B10: 1373.364
+    B11: 1613.862
+    B12: 2203.618
+    L8_B2: 482.627
+    L8_B3: 560.992
+    L8_B4: 654.286
+    L8_B5: 864.613
+    L8_B6: 1608.747
+    L8_B7: 2203.505
   sar:
     VV: -1
     VH: -2
@@ -53,3 +39,11 @@ wave_list:
     DSC_VV: -5
     DSC_VH: -6
     VV-VH: -7
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

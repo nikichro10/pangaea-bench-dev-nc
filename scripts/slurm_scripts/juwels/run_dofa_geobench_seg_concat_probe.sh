@@ -57,7 +57,7 @@ launch_job() {
     cmd+=" --config-name=train"
     cmd+=" dataset=${dataset}"
     cmd+=" encoder=${ENCODER}"
-    cmd+=" decoder=seg_concat_probe"
+    cmd+=" decoder=seg_mlp_fusion"
     cmd+=" preprocessing=${PREPROCESSING}"
     cmd+=" criterion=${criterion}"
     cmd+=" task=segmentation"
