@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/carl_seg"
 readonly ENCODER="carl"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c06s02"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -62,6 +62,7 @@ launch_job() {
     cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
+    cmd+=" task.trainer.ckpt_interval=999"
 
     if [ "${#extra_args[@]}" -gt 0 ]; then
         cmd+=" ${extra_args[*]}"

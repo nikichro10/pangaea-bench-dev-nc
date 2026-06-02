@@ -1,10 +1,10 @@
-_target_: pangaea.encoders.dofa_encoder.DOFA_Encoder
+_target_: pangaea.encoders.dofav2_encoder.DOFAv2_Encoder
 encoder_weights: ./pretrained_models/dofav2_vit_base_e150.pth
 download_url: https://huggingface.co/earthflow/DOFA/resolve/main/dofav2_vit_base_e150.pth
 
 embed_dim: 768
 input_size: 224
-patch_size: 16
+patch_size: 14
 depth: 12
 num_heads: 12
 mlp_ratio: 4
@@ -37,9 +37,9 @@ wave_list:
     VV-VH: 3.75
 
 output_layers:
-  - 3
-  - 5
-  - 7
+  - 4
+  - 6
+  - 10
   - 11
 
 output_dim: 768

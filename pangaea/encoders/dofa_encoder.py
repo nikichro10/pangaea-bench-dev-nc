@@ -222,7 +222,7 @@ class DOFA_Encoder(Encoder):
         self.norm = norm_layer(self.embed_dim)
 
         self.patch_embed = Dynamic_MLP_OFA(
-            wv_planes=128, inter_dim=128, kernel_size=16, embed_dim=embed_dim
+            wv_planes=128, inter_dim=128, kernel_size=patch_size, embed_dim=embed_dim
         )
         self.num_patches = (self.img_size // patch_size) ** 2
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
@@ -247,12 +247,28 @@ class DOFA_Encoder(Encoder):
         # embed patches
         x = [image[m].squeeze(2) for m in self.input_bands.keys()]
         x = torch.cat(x, dim=1)
+        B, _, H, W = x.shape
         wavelist = torch.tensor(self.wv_list, device=x.device).float()
         self.waves = wavelist
 
         x, _ = self.patch_embed(x, self.waves)
 
-        x = x + self.pos_embed[:, 1:, :]
+        # Interpolate pos_embed when input differs from the pretrained grid size.
+        gh = H // self.patch_size
+        gw = W // self.patch_size
+        base_g = self.img_size // self.patch_size
+        if gh == base_g and gw == base_g:
+            patch_pos = self.pos_embed[:, 1:, :]
+        else:
+            patch_pos = (
+                self.pos_embed[:, 1:, :]
+                .reshape(1, base_g, base_g, self.embed_dim)
+                .permute(0, 3, 1, 2)
+            )
+            patch_pos = F.interpolate(patch_pos, size=(gh, gw), mode="bicubic", align_corners=False)
+            patch_pos = patch_pos.permute(0, 2, 3, 1).reshape(1, gh * gw, self.embed_dim)
+
+        x = x + patch_pos
         # append cls token
         cls_token = self.cls_token + self.pos_embed[:, :1, :]
         cls_tokens = cls_token.expand(x.shape[0], -1, -1)
@@ -268,12 +284,7 @@ class DOFA_Encoder(Encoder):
                 out = (
                     x[:, 1:]
                     .permute(0, 2, 1)
-                    .view(
-                        x.shape[0],
-                        -1,
-                        self.img_size // self.patch_size,
-                        self.img_size // self.patch_size,
-                    )
+                    .view(x.shape[0], -1, gh, gw)
                     .contiguous()
                 )
 
@@ -298,6 +309,12 @@ class DOFA_Encoder(Encoder):
 
     def load_encoder_weights(self, logger: Logger) -> None:
         pretrained_model = torch.load(self.encoder_weights, map_location="cpu", weights_only=False)
+        # DOFAv2 checkpoints wrap the ViT backbone under a 'model.' prefix.
+        # Strip it so keys align with this encoder's attribute names.
+        pretrained_model = {
+            (k[len("model."):] if k.startswith("model.") else k): v
+            for k, v in pretrained_model.items()
+        }
         k = pretrained_model.keys()
         pretrained_encoder = {}
         incompatible_shape = {}

@@ -1,0 +1,20 @@
+# Full-size preprocessing: no random crop during training.
+# Use with encoders that support positional embedding interpolation (e.g. dofav2_vitl_fullsize).
+# Images are passed at their native resolution; pos_embed is interpolated in the encoder forward pass.
+train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+        - _target_: pangaea.engine.data_preprocessor.BandFilter
+        - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+
+val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+        - _target_: pangaea.engine.data_preprocessor.BandFilter
+        - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+
+test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+        - _target_: pangaea.engine.data_preprocessor.BandFilter
+        - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd

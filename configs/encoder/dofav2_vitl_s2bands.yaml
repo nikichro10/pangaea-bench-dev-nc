@@ -1,0 +1,68 @@
+# DOFAv2 ViT-L with fixed S2 input_bands + BandPadding experiment.
+# Analogous to dofa_s2bands.yaml but for the ViT-L checkpoint (depth=24, embed_dim=1024, patch_size=14).
+_target_: pangaea.encoders.dofav2_encoder.DOFAv2_Encoder
+encoder_weights: ./pretrained_models/dofav2_vit_large_e150.pth
+download_url: https://huggingface.co/earthflow/DOFA/resolve/main/dofav2_vit_large_e150.pth
+
+embed_dim: 1024
+input_size: 224
+patch_size: 14
+depth: 24
+num_heads: 16
+mlp_ratio: 4
+use_norm: False
+
+# Fixed S2 band set — BandPadding will zero-fill bands missing in the dataset.
+input_bands:
+  optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+
+wave_list:
+  optical:
+    B1: 0.44
+    B2: 0.49
+    B3: 0.56
+    B4: 0.665
+    B5: 0.705
+    B6: 0.74
+    B7: 0.783
+    B8: 0.832
+    B8A: 0.864
+    B9: 0.945
+    B10: 1.373
+    B11: 1.61
+    B12: 2.20
+    L8_B2: 0.482
+    L8_B3: 0.562
+    L8_B4: 0.655
+    L8_B5: 0.865
+    L8_B6: 1.609
+    L8_B7: 2.201
+  sar:
+    VV: 3.75
+    VH: 3.75
+    ASC_VV: 3.75
+    ASC_VH: 3.75
+    DSC_VV: 3.75
+    DSC_VH: 3.75
+    VV-VH: 3.75
+
+output_layers:
+  - 5
+  - 11
+  - 17
+  - 23
+
+output_dim: 1024
