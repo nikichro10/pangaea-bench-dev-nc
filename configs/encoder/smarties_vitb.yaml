@@ -1,0 +1,21 @@
+_target_: pangaea.encoders.smarties_encoder.SMARTIES_Encoder
+
+encoder_weights: ./pretrained_models/smarties-v1-vitb.safetensors
+download_url: https://huggingface.co/gsumbul/SMARTIES-v1-ViT-B/resolve/main/smarties-v1-vitb.safetensors
+
+embed_dim: 768
+input_size: 224
+patch_size: 16
+depth: 12
+num_heads: 12
+mlp_ratio: 4.0
+
+input_bands: ${dataset.bands}
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

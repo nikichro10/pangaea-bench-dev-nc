@@ -1,0 +1,34 @@
+_target_: pangaea.encoders.smarties_encoder.SMARTIES_Encoder
+
+encoder_weights: ./pretrained_models/smarties-v1-vitb.safetensors
+download_url: https://huggingface.co/gsumbul/SMARTIES-v1-ViT-B/resolve/main/smarties-v1-vitb.safetensors
+
+embed_dim: 768
+input_size: 224
+patch_size: 16
+depth: 12
+num_heads: 12
+mlp_ratio: 4.0
+
+input_bands: ${dataset.bands}
+
+# Map RGB-sensor bands (Planet, aerial) to the RGB-trained spectrum projectors
+# instead of the default S2 projectors.
+#
+# Sensor      Band  λ_center  Default (S2)           Override (RGB)
+# Planet PS2  B4    630 nm    red_2  idx=6 (634-696)  red_1  idx=5 (590-710)
+# Planet PS2  B3    545 nm    green_2 idx=4 (524-595)  green_1 idx=3 (466-620)
+# Planet PS2  B2    485 nm    blue_1  idx=1 (427-558)  blue_3  idx=2 (430-545)
+proj_idx_override:
+  optical:
+    B4: 5   # red_1   — RGB sensor projector (590–710 nm)
+    B3: 3   # green_1 — RGB sensor projector (466–620 nm)
+    B2: 2   # blue_3  — RGB sensor projector (430–545 nm)
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

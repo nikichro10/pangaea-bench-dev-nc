@@ -9,7 +9,7 @@ readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofav2_seg"
 readonly ENCODER="dofav2"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar01c02s02,hpdar01c02s03,hpdar01c03s04,hpdar01c04s03,hpdar01c04s04,hpdar04c01s02,hpdar04c05s01,hpdar04c05s05,hpdar04c06s03,hpdar04c04s02"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c06s02"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -61,6 +61,7 @@ launch_job() {
     cmd+=" dataset.root_path='${DATASET_PATH}/${dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
+    cmd+=" task.trainer.ckpt_interval=999"
 
     if [ "${#extra_args[@]}" -gt 0 ]; then
         cmd+=" ${extra_args[*]}"
@@ -136,7 +137,7 @@ declare -A datasets=(
 # Use "all" to run everything, or list specific dataset names.
 # Example: RUN_DATASETS="hlsburnscars sen1floods11 mados"
 # -----------------------------------------------------------------------------
-RUN_DATASETS="hlsburnscars sen1floods11 mados pastis spacenet7cd ai4smallfarms"  # all, or space-separated list of dataset keys
+RUN_DATASETS="all"  # all, or space-separated list of dataset keys
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS
