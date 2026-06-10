@@ -1,5 +1,7 @@
-_target_: pangaea.decoders.linearprobe.SegLinearProbe
+_target_: pangaea.decoders.seg_linear_probe.LinearProbeDecoder
 
 encoder: null
 num_classes: ${dataset.num_classes}
 finetune: ${finetune}
+multi_temporal: ${dataset.multi_temporal}
+upsample_mode: bilinear

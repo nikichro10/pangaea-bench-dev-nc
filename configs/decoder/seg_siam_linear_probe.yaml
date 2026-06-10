@@ -1,0 +1,6 @@
+_target_: pangaea.decoders.seg_linear_probe.SiamLinearProbeDecoder
+
+encoder: null
+num_classes: ${dataset.num_classes}
+finetune: ${finetune}
+upsample_mode: bilinear
