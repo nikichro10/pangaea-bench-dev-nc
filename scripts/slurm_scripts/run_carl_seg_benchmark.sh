@@ -1,11 +1,17 @@
 #!/bin/bash
 
 # -----------------------------------------------------------------------------
-# CONFIGURATION
+# CARL segmentation benchmark
+# Full 9-dataset suite matching the panopticon/dofa/smarties benchmark setup.
+# NormalizeMeanStd is intentionally omitted — CARL applies per-image
+# zero-mean unit-variance standardization internally, so dataset-level
+# normalization would be overridden anyway.
+# CARL is optical-only — SAR bands are dropped via BandFilter.
 # -----------------------------------------------------------------------------
+
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/carl_seg"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
-readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/carl_seg"
+readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/carl_seg"
 readonly ENCODER="carl"
 readonly ENCODER_IMSIZE=224
 
@@ -15,20 +21,19 @@ mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
 # -----------------------------------------------------------------------------
 # PREPROCESSING SELECTION
-# CARL patch_size=8, input_size=224:
-#   img_size <= 224 -> seg_resize
-#   img_size >  224 -> seg_default (random crop to 224), mados -> seg_focus_crop
+# Uses _no_norm variants: BandFilter only, no NormalizeMeanStd.
+# CARL normalizes per-image internally (_standardize in carl_encoder.py).
 # -----------------------------------------------------------------------------
 choose_preprocessing() {
     local -r dataset=$1
     local -r dataset_size=$2
 
     if [ "$dataset_size" -le "$ENCODER_IMSIZE" ]; then
-        echo "seg_resize"
+        echo "seg_resize_no_norm"
     elif [ "$dataset" = "mados" ]; then
-        echo "seg_focus_crop"
+        echo "seg_focus_crop_no_norm"
     else
-        echo "seg_default"
+        echo "seg_default_no_norm"
     fi
 }
 
@@ -118,26 +123,22 @@ declare -A dataset_sizes=(
 
 # -----------------------------------------------------------------------------
 # DATASET DEFINITIONS
-# CARL is optical-only — SAR bands are ignored via input_bands filtering.
-# Multi-temporal datasets use _optical variants (no SAR) + LTAE decoder.
-# spacenet7cd: siamese change detection
-# ai4smallfarms: dice loss + data_replicate=2 for class imbalance
+# Format: "task decoder criterion time_limit [extra_args...]"
 # -----------------------------------------------------------------------------
 declare -A datasets=(
     ["hlsburnscars"]="segmentation    seg_upernet          cross_entropy  6:00:00"
     ["sen1floods11"]="segmentation    seg_upernet          cross_entropy  6:00:00"
     ["mados"]="segmentation          seg_upernet          cross_entropy  8:00:00"
-    ["pastis"]="segmentation          seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["croptypemapping"]="segmentation  seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
+    ["pastis"]="segmentation         seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
+    ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
-    ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  24:00:00"
 )
 
 # -----------------------------------------------------------------------------
 # SELECT DATASETS TO RUN
-# Edit this list or set to "all".
 # -----------------------------------------------------------------------------
 RUN_DATASETS="all"
 

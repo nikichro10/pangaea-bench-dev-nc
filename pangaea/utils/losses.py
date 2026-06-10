@@ -49,6 +49,39 @@ class WeightedCrossEntropyAuto(torch.nn.Module):
         )
 
 
+class WeightedBCELoss(torch.nn.Module):
+    """BCEWithLogitsLoss with pos_weight derived from class distribution.
+
+    For binary segmentation (num_classes=1 / single sigmoid output).
+    pos_weight = distribution[0] / distribution[1] (neg_freq / pos_freq),
+    which upweights the minority (positive) class.
+
+    Args:
+        ignore_index (int): Label value to exclude from the loss.
+        distribution (list[float]): [neg_class_freq, pos_class_freq].
+    """
+
+    def __init__(self, ignore_index: int, distribution: list[float]) -> None:
+        super().__init__()
+        self.ignore_index = ignore_index
+        self.pos_weight = torch.tensor([distribution[0] / distribution[1]])
+
+    def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        # logits: (B, 1, H, W), target: (B, H, W) with integer labels
+        logits = logits.squeeze(1)  # (B, H, W)
+        mask = target != self.ignore_index
+        target_f = target.float()
+        target_f[~mask] = 0.0
+        loss = F.binary_cross_entropy_with_logits(
+            logits,
+            target_f,
+            pos_weight=self.pos_weight.to(logits.device),
+            reduction="none",
+        )
+        valid = mask.float().sum()
+        return (loss * mask.float()).sum() / valid.clamp(min=1)
+
+
 class DICELoss(torch.nn.Module):
     def __init__(self, ignore_index: int) -> None:
         super(DICELoss, self).__init__()

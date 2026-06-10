@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/dofav2_seg"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
-readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofav2_seg"
+readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/dofav2_seg"
 readonly ENCODER="dofav2"
 readonly ENCODER_IMSIZE=224
 
@@ -43,8 +43,9 @@ launch_job() {
     local -r time_limit=$5
     local -ra extra_args=("${@:6}")
 
-    local -r dataset_size="${dataset_sizes[$dataset]}"
-    local -r preprocessing=$(choose_preprocessing "$dataset" "$dataset_size")
+    local -r base_dataset="${dataset%_optical}"
+    local -r dataset_size="${dataset_sizes[$base_dataset]}"
+    local -r preprocessing=$(choose_preprocessing "$base_dataset" "$dataset_size")
     local -r job_name="dofav2_${dataset}"
     local -r sbatch_script="${dataset}_dofav2.sh"
 
@@ -58,10 +59,9 @@ launch_job() {
     cmd+=" preprocessing=${preprocessing}"
     cmd+=" criterion=${criterion}"
     cmd+=" task=${task}"
-    cmd+=" dataset.root_path='${DATASET_PATH}/${dataset}'"
+    cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
-    cmd+=" task.trainer.ckpt_interval=999"
 
     if [ "${#extra_args[@]}" -gt 0 ]; then
         cmd+=" ${extra_args[*]}"
@@ -127,7 +127,7 @@ declare -A datasets=(
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
-    ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
 )
 

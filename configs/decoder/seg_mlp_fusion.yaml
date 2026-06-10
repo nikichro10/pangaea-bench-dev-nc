@@ -4,4 +4,5 @@ encoder: null
 num_classes: ${dataset.num_classes}
 finetune: ${finetune}
 channels: 128
+multi_temporal: ${dataset.multi_temporal}
 upsample_mode: bilinear

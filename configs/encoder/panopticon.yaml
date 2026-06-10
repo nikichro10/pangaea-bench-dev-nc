@@ -1,4 +1,5 @@
 _target_: pangaea.encoders.panopticon_encoder.PanopticonEncoder
+
 encoder_weights: ./pretrained_models/panopticon_vitb14_teacher.pth
 download_url: https://huggingface.co/lewaldm/panopticon/resolve/main/panopticon_vitb14_teacher.pth
 

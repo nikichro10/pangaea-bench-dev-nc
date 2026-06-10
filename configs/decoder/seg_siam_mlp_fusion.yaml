@@ -1,0 +1,7 @@
+_target_: pangaea.decoders.seg_mlp_fusion.SiamMLPFusionDecoder
+
+encoder: null
+num_classes: ${dataset.num_classes}
+finetune: ${finetune}
+channels: 128
+upsample_mode: bilinear

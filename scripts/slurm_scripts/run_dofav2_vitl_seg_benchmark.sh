@@ -129,7 +129,7 @@ declare -A datasets=(
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  36:00:00"
     ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  16:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           12:00:00"
-    ["ai4smallfarms"]="segmentation   seg_upernet          dice           14:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   14:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  36:00:00"
 )
 

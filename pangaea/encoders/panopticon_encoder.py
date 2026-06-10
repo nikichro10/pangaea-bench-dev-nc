@@ -13,6 +13,23 @@ def _get_panopticon_hub_dir() -> str:
     return os.path.join(torch.hub.get_dir(), "panopticon-FM_panopticon_main")
 
 
+def _ensure_hub_code() -> None:
+    """Clone the Panopticon repo via torch.hub if not already present.
+
+    Only runs on first use; subsequent calls are a no-op directory check.
+    Note: hubconf.py unconditionally re-downloads the weights as a side effect
+    of torch.hub.load, so this is only called when the directory is missing.
+    """
+    hub_dir = _get_panopticon_hub_dir()
+    if not os.path.isdir(hub_dir):
+        torch.hub.load(
+            "panopticon-FM/panopticon",
+            "panopticon_vitb14",
+            trust_repo=True,
+            skip_validation=True,
+        )
+
+
 def _build_panopticon_vitb14(attn_dim: int = 2304) -> nn.Module:
     hub_dir = _get_panopticon_hub_dir()
     if hub_dir not in sys.path:
@@ -48,8 +65,12 @@ class PanopticonEncoder(Encoder):
     Handles arbitrary band combinations via channel cross-attention (chn_ids).
     Use without BandPadding (no_pad preprocessing) so only real bands are passed.
 
+    The hub repo is cloned once on first use; weights are downloaded once to
+    encoder_weights by the base class and loaded directly from there — no
+    re-download on subsequent runs or concurrent jobs.
+
     Args:
-        encoder_weights (str | Path): Path to panopticon_vitb14_teacher.pth.
+        encoder_weights (str | Path): Local path for the checkpoint.
         input_bands (dict[str, list[str]]): Band names per modality.
         input_size (int): Spatial input size (224 recommended).
         embed_dim (int): ViT embedding dimension (768 for ViT-B).
@@ -57,7 +78,7 @@ class PanopticonEncoder(Encoder):
         output_layers (list[int]): 0-indexed transformer block indices to return.
         wave_list (dict[str, dict[str, float]]): Maps band names to channel IDs
             (nm wavelengths for optical, negative integers for SAR).
-        download_url (str): URL to download encoder_weights if missing.
+        download_url (str): URL for the base class to download encoder_weights.
         patch_size (int): ViT patch size (14).
         attn_dim (int): Internal attention dimension of PanopticonPE (2304).
         use_norm (bool): Whether to apply the encoder's final LayerNorm.
@@ -94,12 +115,12 @@ class PanopticonEncoder(Encoder):
         self.patch_size = patch_size
         self.use_norm = use_norm
         self.wave_list = wave_list
+        self._attn_dim = attn_dim
 
-        self.encoder = _build_panopticon_vitb14(attn_dim=attn_dim)
-        self.norm = self.encoder.norm
+        # encoder and norm are built in load_encoder_weights once hub code is available
+        self.encoder: nn.Module | None = None
+        self.norm: nn.Module | None = None
 
-        # Build chn_ids from wave_list — shape (C,), registered as buffer so it
-        # moves to the right device automatically.
         chn_ids = torch.tensor(
             [self.wave_list[m][bi] for m, b in self.input_bands.items() for bi in b],
             dtype=torch.float32,
@@ -126,17 +147,17 @@ class PanopticonEncoder(Encoder):
             raise ValueError(
                 "No bands remain after filtering to available data bands."
             )
-        self.chn_ids = torch.tensor(chn_ids, dtype=torch.float32).to(
-            self.chn_ids.device
+        self.register_buffer(
+            "chn_ids",
+            torch.tensor(chn_ids, dtype=torch.float32),
         )
 
     def forward(self, image: dict[str, torch.Tensor]) -> list[torch.Tensor]:
         x = torch.cat(
             [image[m].squeeze(2) for m in self.input_bands.keys()], dim=1
         )  # (B, C, H, W)
-        B = x.shape[0]
+        B, _, H, W = x.shape
 
-        # chn_ids: (B, C) — expand from buffer (C,)
         chn_ids = self.chn_ids.unsqueeze(0).expand(B, -1)
         x_dict = {"imgs": x, "chn_ids": chn_ids}
 
@@ -149,7 +170,8 @@ class PanopticonEncoder(Encoder):
                 x_dict, self.output_layers
             )
 
-        H = W = self.input_size // self.patch_size
+        patch_h = H // self.patch_size
+        patch_w = W // self.patch_size
         output = []
         for blk in blocks:
             if self.use_norm:
@@ -158,7 +180,7 @@ class PanopticonEncoder(Encoder):
             out = (
                 blk[:, 1:]
                 .permute(0, 2, 1)
-                .view(B, self.embed_dim, H, W)
+                .view(B, self.embed_dim, patch_h, patch_w)
                 .contiguous()
             )
             output.append(out)
@@ -166,24 +188,31 @@ class PanopticonEncoder(Encoder):
         return output
 
     def load_encoder_weights(self, logger: Logger) -> None:
+        # Ensure hub code is cloned (no-op if already present, so safe for
+        # concurrent jobs — they all skip the download).
+        _ensure_hub_code()
+
+        self.encoder = _build_panopticon_vitb14(attn_dim=self._attn_dim)
+        self.norm = self.encoder.norm
+
+        # Load from the local file downloaded by base class download_model().
+        # The checkpoint is a flat state dict (confirmed from hubconf.py).
         pretrained = torch.load(
             self.encoder_weights, map_location="cpu", weights_only=False
         )
-        incompatible_shape = {}
-        missing = {}
-        matched = {}
-        state = self.encoder.state_dict()
-        for name, param in state.items():
-            if name not in pretrained:
-                missing[name] = param.shape
-            elif pretrained[name].shape != param.shape:
-                incompatible_shape[name] = (param.shape, pretrained[name].shape)
-            else:
-                matched[name] = pretrained[name]
+        incompatible = self.encoder.load_state_dict(pretrained, strict=False)
+        del pretrained
 
-        self.encoder.load_state_dict(matched, strict=False)
-        self.parameters_warning(missing, incompatible_shape, logger)
+        if incompatible.missing_keys:
+            logger.warning(
+                "Panopticon: missing keys:\n"
+                + "\n".join(incompatible.missing_keys)
+            )
+        if incompatible.unexpected_keys:
+            logger.warning(
+                "Panopticon: unexpected keys:\n"
+                + "\n".join(incompatible.unexpected_keys)
+            )
         logger.info(
-            f"Panopticon: loaded {len(matched)}/{len(state)} parameters "
-            f"from {self.encoder_weights}"
+            f"Panopticon: loaded weights from {self.encoder_weights}"
         )

@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/dofa_seg"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
-readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/dofa_seg"
+readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/dofa_seg"
 readonly ENCODER="dofa"
 readonly ENCODER_IMSIZE=224
 
@@ -124,7 +124,7 @@ declare -A dataset_sizes=(
 #   LTAE decoder aggregates across time.
 #
 # spacenet7cd: change detection with siamese decoder
-# ai4smallfarms: dice loss due to class imbalance, data_replicate=2
+# ai4smallfarms: weighted_bce — prevents Dice collapse on imbalanced binary data
 # fivebillionpixels: 25 classes, large images
 # -----------------------------------------------------------------------------
 declare -A datasets=(
@@ -135,7 +135,7 @@ declare -A datasets=(
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
-    ["ai4smallfarms"]="segmentation   seg_upernet          dice           10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
 )
 

@@ -2,12 +2,12 @@
 
 # -----------------------------------------------------------------------------
 # SMARTIES ViT-B segmentation benchmark
-# Datasets: HLS BurnScars, DynamicEarthNet, SpaceNet7
+# Full 9-dataset suite matching the panopticon/dofa benchmark setup.
 # -----------------------------------------------------------------------------
 
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/smarties_vitb_seg"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
-readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/smarties_vitb_seg"
+readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/smarties_vitb_seg"
 readonly ENCODER="smarties_vitb"
 readonly ENCODER_IMSIZE=224
 
@@ -19,8 +19,7 @@ mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 # PREPROCESSING SELECTION
 # SMARTIES input_size=224:
 #   img_size <= 224 -> seg_resize (upsample to 224)
-#   img_size >  224 -> seg_default (random crop to 224)
-# All three datasets are larger than 224, so all use seg_default.
+#   img_size >  224 -> seg_default (random crop to 224), except mados -> seg_focus_crop
 # -----------------------------------------------------------------------------
 choose_preprocessing() {
     local -r dataset=$1
@@ -28,6 +27,8 @@ choose_preprocessing() {
 
     if [ "$dataset_size" -le "$ENCODER_IMSIZE" ]; then
         echo "seg_resize"
+    elif [ "$dataset" = "mados" ]; then
+        echo "seg_focus_crop"
     else
         echo "seg_default"
     fi
@@ -106,30 +107,51 @@ EOF
 # -----------------------------------------------------------------------------
 declare -A dataset_sizes=(
     ["hlsburnscars"]=512
+    ["sen1floods11"]=512
+    ["mados"]=240
+    ["pastis"]=128
     ["dynamicen"]=1024
-    ["spacenet7"]=256
+    ["croptypemapping"]=64
+    ["spacenet7cd"]=256
+    ["ai4smallfarms"]=496
+    ["fivebillionpixels"]=520
 )
 
 # -----------------------------------------------------------------------------
 # DATASET DEFINITIONS
 # Format: "task decoder criterion time_limit [extra_args...]"
-#
-# hlsburnscars: standard single-temporal binary segmentation (burn scar vs. not)
-# dynamicen:    multi-temporal (6 timesteps), LTAE fuses per-timestep SMARTIES features
-# spacenet7:    binary building footprint segmentation, dice due to class imbalance
 # -----------------------------------------------------------------------------
 declare -A datasets=(
-    ["hlsburnscars"]="segmentation  seg_upernet          cross_entropy  6:00:00"
-    ["dynamicen"]="segmentation     seg_upernet_mt_ltae  cross_entropy  24:00:00"
-    ["spacenet7"]="segmentation     seg_upernet          dice           6:00:00"
+    ["hlsburnscars"]="segmentation    seg_upernet          cross_entropy  6:00:00"
+    ["sen1floods11"]="segmentation    seg_upernet          cross_entropy  6:00:00"
+    ["mados"]="segmentation          seg_upernet          cross_entropy  8:00:00"
+    ["pastis"]="segmentation         seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
+    ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
+    ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
+    ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
+    ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
+    ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
 )
+
+# -----------------------------------------------------------------------------
+# SELECT DATASETS TO RUN
+# Edit this list to choose which datasets to submit.
+# Use "all" to run everything, or list specific dataset names.
+# Example: RUN_DATASETS="hlsburnscars sen1floods11"
+# -----------------------------------------------------------------------------
+RUN_DATASETS="all"
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS
 # -----------------------------------------------------------------------------
 for dataset in "${!datasets[@]}"; do
+    if [ "$RUN_DATASETS" != "all" ]; then
+        [[ " $RUN_DATASETS " != *" $dataset "* ]] && continue
+    fi
+
     read -r task decoder criterion time_limit remainder <<< "${datasets[$dataset]}"
     read -ra extra_args <<< "$remainder"
+
     launch_job "$dataset" "$task" "$decoder" "$criterion" "$time_limit" "${extra_args[@]}"
 done
 
