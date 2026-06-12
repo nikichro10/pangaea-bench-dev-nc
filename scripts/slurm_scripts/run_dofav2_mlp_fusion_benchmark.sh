@@ -120,7 +120,7 @@ declare -A datasets=(
     ["fivebillionpixels"]="segmentation seg_mlp_fusion   cross_entropy  6:00:00"
 )
 
-RUN_DATASETS="all"
+RUN_DATASETS="croptypemapping"
 
 for dataset in "${!datasets[@]}"; do
     if [ "$RUN_DATASETS" != "all" ]; then

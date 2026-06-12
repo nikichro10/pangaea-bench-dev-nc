@@ -117,9 +117,9 @@ declare -A datasets=(
     ["pastis"]="segmentation         seg_linear_probe    cross_entropy  6:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      seg_linear_probe    cross_entropy  12:00:00"
     ["croptypemapping"]="segmentation seg_linear_probe    cross_entropy  6:00:00 task.evaluator.inference_mode=whole"
-    ["spacenet7cd"]="change_detection seg_siam_linear_probe dice           4:00:00"
+    ["spacenet7cd"]="change_detection seg_siam_linear_probe dice           6:00:00"
     ["ai4smallfarms"]="segmentation   seg_linear_probe    weighted_bce   6:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
-    ["fivebillionpixels"]="segmentation seg_linear_probe  cross_entropy  6:00:00"
+    ["fivebillionpixels"]="segmentation seg_linear_probe  cross_entropy  10:00:00"
 )
 
 RUN_DATASETS="all"

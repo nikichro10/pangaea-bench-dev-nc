@@ -1,0 +1,20 @@
+_target_: pangaea.encoders.dinov2_encoder.DINOv2_Encoder
+encoder_weights: ./pretrained_models/dinov2_vitb14_pretrain.pth
+download_url: https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_pretrain.pth
+
+embed_dim: 768
+input_size: 224
+
+input_bands:
+  optical:
+    - B4
+    - B3
+    - B2
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768
