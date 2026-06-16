@@ -2,6 +2,7 @@ train: true
 work_dir: ""
 seed: 234
 use_wandb: false
+wandb_project: "geofm-bench"
 wandb_run_id: null
 
 # TRAINING

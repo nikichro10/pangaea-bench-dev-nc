@@ -100,7 +100,7 @@ def main(cfg: DictConfig) -> None:
 
             wandb_cfg = OmegaConf.to_container(cfg, resolve=True)
             wandb.init(
-                project="geofm-bench",
+                project=cfg.get("wandb_project", "geofm-bench"),
                 name=exp_name,
                 config=wandb_cfg,
             )
@@ -119,7 +119,7 @@ def main(cfg: DictConfig) -> None:
 
             wandb_cfg = OmegaConf.to_container(cfg, resolve=True)
             wandb.init(
-                project="geofm-bench",
+                project=cfg.get("wandb_project", "geofm-bench"),
                 name=exp_name,
                 config=wandb_cfg,
                 id=cfg.get("wandb_run_id"),

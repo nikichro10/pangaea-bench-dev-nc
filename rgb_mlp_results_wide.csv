@@ -1,0 +1,8 @@
+project,encoder,decoder,hlsburnscars,sen1floods11,mados,pastis,dynamicen,croptypemapping,spacenet7cd,ai4smallfarms,fivebillionpixels,mean
+geofm-bench-rgb,carl,seg_mlp_fusion,65.047,64.124,33.988,25.09,,51.891,,29.875,,45.002
+geofm-bench-rgb,dinov2_vitb14,seg_mlp_fusion,74.098,68.182,57.277,13.942,23.511,19.803,,34.199,62.351,44.17
+geofm-bench-rgb,dinov2_vitb14,seg_siam_mlp_fusion,,,,,,,58.27,,,58.27
+geofm-bench-rgb,dofa,seg_mlp_fusion,74.788,73.556,57.415,22.285,34.976,28.314,,34.767,66.845,49.118
+geofm-bench-rgb,dofav2,seg_mlp_fusion,76.29,72.51,53.054,21.649,33.166,21.604,,34.95,67.206,47.554
+geofm-bench-rgb,panopticon,seg_mlp_fusion,75.488,74.991,61.62,26.603,33.499,46.985,,34.852,,50.577
+geofm-bench-rgb,smarties_vitb,seg_mlp_fusion,71.557,67.617,37.815,18.401,25.68,45.589,,31.016,,42.525

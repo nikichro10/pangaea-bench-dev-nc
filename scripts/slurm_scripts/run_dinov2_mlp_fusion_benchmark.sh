@@ -62,6 +62,7 @@ launch_job() {
     cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
+    cmd+=" wandb_project=geofm-bench-rgb"
 
     if [ "${#extra_args[@]}" -gt 0 ]; then
         cmd+=" ${extra_args[*]}"

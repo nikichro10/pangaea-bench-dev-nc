@@ -62,6 +62,7 @@ launch_job() {
     cmd+=" dataset.root_path='${DATASET_PATH}/${base_dataset}'"
     cmd+=" work_dir=${WORK_DIR}"
     cmd+=" use_wandb=True"
+    cmd+=" wandb_project=geofm-bench-rgb"
 
     if [ "${#extra_args[@]}" -gt 0 ]; then
         cmd+=" ${extra_args[*]}"
@@ -107,7 +108,6 @@ declare -A dataset_sizes=(
     ["pastis"]=128
     ["dynamicen"]=1024
     ["croptypemapping"]=64
-    ["spacenet7cd"]=256
     ["ai4smallfarms"]=496
     ["fivebillionpixels"]=520
 )
@@ -124,7 +124,6 @@ declare -A rgb_override=(
     ["pastis"]="'encoder.input_bands={optical:[B2,B3,B4]}'"
     ["dynamicen"]="'encoder.input_bands={optical:[B2,B3,B4]}'"
     ["croptypemapping"]="'encoder.input_bands={optical:[B2,B3,B4]}'"
-    ["spacenet7cd"]=""
     ["ai4smallfarms"]="'encoder.input_bands={optical:[B2,B3,B4]}'"
     ["fivebillionpixels"]="'encoder.input_bands={optical:[B4,B3,B2]}'"
 )
@@ -137,7 +136,6 @@ declare -A datasets=(
     ["pastis"]="segmentation         seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["croptypemapping"]="segmentation seg_upernet_mt_ltae cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["spacenet7cd"]="change_detection seg_siamupernet_conc dice           8:00:00"
     ["ai4smallfarms"]="segmentation   seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation seg_upernet        cross_entropy  10:00:00"
 )

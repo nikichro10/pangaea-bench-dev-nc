@@ -1,0 +1,16 @@
+project,encoder,decoder,hlsburnscars,sen1floods11,mados,pastis,dynamicen,croptypemapping,spacenet7cd,ai4smallfarms,fivebillionpixels,mean
+geofm-bench,dinov2_vitb14,seg_siamupernet_conc,,,,,,,62.845,,,62.845
+geofm-bench,dinov2_vitb14,seg_upernet,74.482,70.02,58.777,,,,,35.205,64.58,60.613
+geofm-bench,dinov2_vitb14,seg_upernet_mt_ltae,,,,18.777,26.583,36.729,,,,27.363
+geofm-bench-rgb,carl,seg_upernet,66.1,65.94,37.061,,,,,29.66,,49.69
+geofm-bench-rgb,carl,seg_upernet_mt_ltae,,,,25.141,27.898,41.734,,,,31.591
+geofm-bench-rgb,copernicus_fm_base,seg_upernet,75.642,74.424,65.108,,,,,35.111,67.704,63.598
+geofm-bench-rgb,copernicus_fm_base,seg_upernet_mt_ltae,,,,23.588,37.06,52.595,,,,37.748
+geofm-bench-rgb,dofa,seg_upernet,76.04,77.255,,,,,,,,76.648
+geofm-bench-rgb,dofa,seg_upernet_mt_ltae,,,,24.49,39.817,51.971,,,,38.759
+geofm-bench-rgb,dofav2,seg_upernet,78.35,75.276,60.863,,,,,38.746,,63.309
+geofm-bench-rgb,dofav2,seg_upernet_mt_ltae,,,,22.695,34.572,40.093,,,,32.453
+geofm-bench-rgb,panopticon,seg_upernet,75.054,76.62,59.249,,,,,35.376,68.083,62.876
+geofm-bench-rgb,panopticon,seg_upernet_mt_ltae,,,,28.149,35.586,40.416,,,,34.717
+geofm-bench-rgb,smarties_vitb,seg_upernet,71.708,68.511,40.066,,,,,32.618,,53.226
+geofm-bench-rgb,smarties_vitb,seg_upernet_mt_ltae,,,,21.481,28.729,42.05,,,,30.753
