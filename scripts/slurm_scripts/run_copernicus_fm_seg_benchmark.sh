@@ -14,7 +14,7 @@
 
 readonly ENCODER="copernicus_fm_base"
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/copernicus_fm_seg"
-readonly WORK_DIR="/dss/dsshome1/08/di54zop/pangaea_experiments/copernicus_fm_seg"
+readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/pangaea_full_seg/upernet/copernicus_fm_seg"
 readonly GEO_BENCH="/p/project1/hai_1280/datasets/geobench"
 readonly SLURM_PARTITION="hpda2_compute_gpu"
 readonly SLURM_CLUSTER="hpda2"

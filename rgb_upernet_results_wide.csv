@@ -12,5 +12,5 @@ geofm-bench-rgb,dofav2,seg_upernet,78.35,75.276,60.863,,,,,38.746,,63.309
 geofm-bench-rgb,dofav2,seg_upernet_mt_ltae,,,,22.695,34.572,40.093,,,,32.453
 geofm-bench-rgb,panopticon,seg_upernet,75.054,76.62,59.249,,,,,35.376,68.083,62.876
 geofm-bench-rgb,panopticon,seg_upernet_mt_ltae,,,,28.149,35.586,40.416,,,,34.717
-geofm-bench-rgb,smarties_vitb,seg_upernet,71.708,68.511,40.066,,,,,32.618,,53.226
+geofm-bench-rgb,smarties_vitb,seg_upernet,71.708,68.511,40.066,,,,,32.618,50.381,52.657
 geofm-bench-rgb,smarties_vitb,seg_upernet_mt_ltae,,,,21.481,28.729,42.05,,,,30.753

@@ -47,6 +47,8 @@ ENCODERS = [
     "panopticon",
     "carl",
     "hierab_mm_dinov2", "hierab_mm_dino",
+    "vit_scratch_mi", "vit_scratch",
+    "unet_encoder_mi", "unet_encoder",
     "gfmswin", "scalemae", "satlasnet", "remoteclip",
     "ssl4eo_dino", "ssl4eo_mae", "ssl4eo_moco", "ssl4eo_data2vec",
     "prithvi", "spectralgpt", "unet",
@@ -58,6 +60,7 @@ DECODERS = [
     "seg_siamupernet_conc", "seg_siamupernet_diff",
     "seg_siam_mlp_fusion", "seg_mlp_fusion",
     "seg_siam_linear_probe", "seg_linear_probe",
+    "seg_siamunet_conc", "seg_siamunet_diff", "seg_unet",
     "cls_linear_probe",
 ]
 

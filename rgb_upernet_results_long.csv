@@ -24,7 +24,6 @@ geofm-bench-rgb,panopticon,seg_upernet,mados,59.249,58.015,69.813,20260613_12222
 geofm-bench-rgb,dofa,seg_upernet,sen1floods11,77.255,79.159,86.134,20260613_12222881_0ef2c8_sen1floods11_dofa_seg_upernet_seg_default
 geofm-bench-rgb,dofa,seg_upernet_mt_ltae,dynamicen,39.817,31.051,51.47,20260613_12222882_adfb59_dynamicen_dofa_seg_upernet_mt_ltae_seg_default
 geofm-bench-rgb,dofa,seg_upernet_mt_ltae,pastis,24.49,25.304,35.685,20260613_12222883_2003f3_pastis_dofa_seg_upernet_mt_ltae_seg_resize
-geofm-bench-rgb,dofa,seg_upernet,hlsburnscars,76.039,79.642,85.147,20260613_12222885_e9df99_hlsburnscars_dofa_seg_upernet_seg_default
 geofm-bench-rgb,dofa,seg_upernet_mt_ltae,croptypemapping,51.971,61.866,60.821,20260613_12222884_62b2c4_croptypemapping_dofa_seg_upernet_mt_ltae_seg_resize
 geofm-bench-rgb,panopticon,seg_upernet,fivebillionpixels,68.083,68.502,78.661,20260614_12223724_a533b7_fivebillionpixels_panopticon_seg_upernet_seg_default
 geofm-bench-rgb,smarties_vitb,seg_upernet,sen1floods11,68.511,69.742,79.039,20260615_12234506_a17beb_sen1floods11_smarties_vitb_seg_upernet_seg_default
@@ -36,16 +35,13 @@ geofm-bench-rgb,dofav2,seg_upernet_mt_ltae,dynamicen,34.572,31.545,47.39,2026061
 geofm-bench-rgb,smarties_vitb,seg_upernet_mt_ltae,croptypemapping,42.05,36.948,53.802,20260615_12234509_94c6ed_croptypemapping_smarties_vitb_seg_upernet_mt_ltae_seg_resize
 geofm-bench-rgb,dofav2,seg_upernet,sen1floods11,75.276,79.471,84.618,20260615_12234515_a36893_sen1floods11_dofav2_seg_upernet_seg_default
 geofm-bench-rgb,dofav2,seg_upernet,mados,60.863,61.374,70.913,20260615_12234522_6ea983_mados_dofav2_seg_upernet_seg_focus_crop
-geofm-bench-rgb,dofa,seg_upernet,sen1floods11,76.663,79.147,85.688,20260615_12234524_c1af6e_sen1floods11_dofa_seg_upernet_seg_default
 geofm-bench-rgb,dofav2,seg_upernet,ai4smallfarms,38.746,41.099,54.881,20260615_12234520_5c5e35_ai4smallfarms_dofav2_seg_upernet_seg_default
 geofm-bench-rgb,smarties_vitb,seg_upernet,mados,40.066,52.726,51.958,20260615_12234513_725242_mados_smarties_vitb_seg_upernet_seg_focus_crop
-geofm-bench-rgb,dofa,seg_upernet_mt_ltae,croptypemapping,26.872,57.393,35.299,20260615_12234527_118cd1_croptypemapping_dofa_seg_upernet_mt_ltae_seg_resize
-geofm-bench-rgb,dofa,seg_upernet_mt_ltae,pastis,23.805,24.464,34.612,20260615_12234526_7ebfd9_pastis_dofa_seg_upernet_mt_ltae_seg_resize
 geofm-bench-rgb,smarties_vitb,seg_upernet_mt_ltae,pastis,21.481,22.265,31.989,20260615_12234508_0543b4_pastis_smarties_vitb_seg_upernet_mt_ltae_seg_resize
 geofm-bench-rgb,dofav2,seg_upernet_mt_ltae,pastis,22.695,23.744,33.028,20260615_12234517_d4c89d_pastis_dofav2_seg_upernet_mt_ltae_seg_resize
 geofm-bench-rgb,dofav2,seg_upernet_mt_ltae,croptypemapping,40.093,44.847,50.954,20260615_12234518_06afe7_croptypemapping_dofav2_seg_upernet_mt_ltae_seg_resize
-geofm-bench-rgb,dofa,seg_upernet_mt_ltae,dynamicen,39.612,31.148,51.284,20260615_12234525_14d58a_dynamicen_dofa_seg_upernet_mt_ltae_seg_default
 geofm-bench-rgb,dofa,seg_upernet,hlsburnscars,76.04,79.61,85.147,20260615_12234528_8fbde7_hlsburnscars_dofa_seg_upernet_seg_default
+geofm-bench-rgb,smarties_vitb,seg_upernet,fivebillionpixels,50.381,48.285,61.777,20260616_12303587_e409a2_fivebillionpixels_smarties_vitb_seg_upernet_seg_default
 geofm-bench,dinov2_vitb14,seg_upernet,hlsburnscars,74.482,77.097,83.894,20260612_12222229_d06f53_hlsburnscars_dinov2_vitb14_seg_upernet_seg_default
 geofm-bench,dinov2_vitb14,seg_upernet_mt_ltae,pastis,18.777,18.047,28.321,20260612_12222227_e3c5c5_pastis_dinov2_vitb14_seg_upernet_mt_ltae_seg_resize
 geofm-bench,dinov2_vitb14,seg_upernet,sen1floods11,70.02,69.322,80.315,20260612_12222225_9f0984_sen1floods11_dinov2_vitb14_seg_upernet_seg_default
