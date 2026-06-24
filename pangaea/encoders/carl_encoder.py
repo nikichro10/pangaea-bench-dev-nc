@@ -711,7 +711,8 @@ class CARLModel(nn.Module):
             ``spec_spatial`` has shape (B, H', W', D_spatial) and is ready to
             be consumed by the spatial encoder.
         """
-        img = self._standardize(img)
+        if self.image_norm:
+            img = self._standardize(img)
         B, C, H, W = img.shape
 
         # Build wavelength tensor — shape (B, C), same wavelength for all items in batch
@@ -957,6 +958,7 @@ class CARLEncoder(Encoder):
         spec_encoder_kwargs: dict,
         spat_encoder_kwargs: dict,
         band_wavelength_overrides: dict[str, dict[str, float]] | None = None,
+        image_norm: bool = True,
         **kwargs,
     ) -> None:
         """
@@ -980,6 +982,10 @@ class CARLEncoder(Encoder):
                 ``{"optical": {"B2": 0.485, "B4": 0.660}}``.
                 Only the listed bands are overridden; all others keep S2 defaults.
                 Use this to pass true sensor wavelengths for non-S2 datasets.
+            image_norm: If True (default), apply per-image zero-mean unit-variance
+                standardization inside the encoder (original CARL behaviour).
+                Set to False when using ``NormalizeImageWise`` in the preprocessing
+                pipeline instead.
         """
         super().__init__(
             model_name="carl",
@@ -994,6 +1000,8 @@ class CARLEncoder(Encoder):
             encoder_weights=encoder_weights,
             download_url=download_url,
         )
+
+        self.image_norm = image_norm
 
         # Build an instance-level wavelength table by merging sensor-specific
         # overrides on top of the S2 class defaults.  This avoids mutating the
@@ -1027,6 +1035,7 @@ class CARLEncoder(Encoder):
         # Inject wavelengths after construction since CARLModel normally derives
         # them from wave_list[sensor], which we bypass here.
         self.carl.wv_list = wv_list
+        self.carl.image_norm = image_norm
         self.patch_size = patch_size
 
     def set_wv_list_from_data_bands(self, data_bands: dict[str, list[str]]) -> None:

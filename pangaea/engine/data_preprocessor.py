@@ -628,6 +628,40 @@ class NormalizeMeanStd(BasePreprocessor):
         return meta
 
 
+class NormalizeImageWise(BasePreprocessor):
+    """Per-image zero-mean unit-variance normalization applied per modality.
+
+    Matches CARL's internal ``_standardize`` but lives in the preprocessing
+    pipeline for consistency with other encoders.  Use together with
+    ``image_norm: false`` on the CARL encoder config.
+    """
+
+    def __init__(self, **meta) -> None:
+        super().__init__()
+
+    def __call__(
+        self, data: dict[str, torch.Tensor | dict[str, torch.Tensor]]
+    ) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
+        for k, img in data["image"].items():
+            mean = img.mean()
+            std = img.std()
+            data["image"][k] = (img - mean) / (std + 1e-6)
+        return data
+
+    def update_meta(self, meta):
+        meta["data_mean"] = {k: torch.zeros_like(v) for k, v in meta["data_mean"].items()}
+        meta["data_std"] = {k: torch.ones_like(v) for k, v in meta["data_std"].items()}
+        meta["data_min"] = {
+            k: (v - meta["data_mean"][k]) / meta["data_std"][k]
+            for k, v in meta["data_min"].items()
+        }
+        meta["data_max"] = {
+            k: (v - meta["data_mean"][k]) / meta["data_std"][k]
+            for k, v in meta["data_max"].items()
+        }
+        return meta
+
+
 class NormalizeMinMax(BasePreprocessor):
     def __init__(
         self,

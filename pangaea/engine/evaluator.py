@@ -452,12 +452,27 @@ class SegEvaluator(Evaluator):
                 vis_img = (samp_np - imin) / (imax - imin) if imax - imin > 1e-6 else np.clip(samp_np, 0.0, 1.0)
                 vis_img = (vis_img * 255).astype(np.uint8)
 
-                pred_mask = batch_pred[idx].numpy().astype(np.uint8)
-                gt_mask = data["target"][idx].numpy().astype(np.uint8)
+                pred_mask = batch_pred[idx].numpy().astype(np.int32)
+                gt_mask = data["target"][idx].numpy().astype(np.int32)
 
                 viz_samples.append((vis_img, pred_mask, gt_mask, f"{self.split} sample {batch_idx}:{idx}"))
             except Exception:
                 continue
+
+    def _make_seg_cmap(self):
+        """tab20 colormap with light gray for ignored pixels."""
+        cmap = plt.cm.tab20.copy()
+        cmap.set_bad(color='lightgray')
+        return cmap
+
+    def _mask_for_viz(self, gt_mask, pred_mask):
+        """Return masked arrays with ignore_index pixels masked out in both GT and Pred."""
+        vmax = max(1, self.num_classes - 1)
+        ignore = self.ignore_index
+        invalid = (gt_mask == ignore)
+        gt_disp = np.ma.masked_where(invalid, np.clip(gt_mask, 0, vmax))
+        pred_disp = np.ma.masked_where(invalid, np.clip(pred_mask, 0, vmax))
+        return gt_disp, pred_disp
 
     def _log_viz_to_wandb(self, viz_samples, epoch, max_viz):
         """Log a grid of (input, GT mask, pred mask) rows to wandb."""
@@ -467,11 +482,14 @@ class SegEvaluator(Evaluator):
         if n_viz == 1:
             axes = np.expand_dims(axes, 0)
 
+        cmap = self._make_seg_cmap()
+        vmax = max(1, self.num_classes - 1)
         for i, (img_rgb, pred_mask, gt_mask, _) in enumerate(viz_samples[:n_viz]):
+            gt_disp, pred_disp = self._mask_for_viz(gt_mask, pred_mask)
             axes[i, 0].imshow(img_rgb);            axes[i, 0].set_title("Input");  axes[i, 0].axis('off')
-            axes[i, 1].imshow(gt_mask,   cmap='tab20', vmin=0, vmax=max(1, self.num_classes - 1))
+            axes[i, 1].imshow(gt_disp,   cmap=cmap, vmin=0, vmax=vmax)
             axes[i, 1].set_title("GT");   axes[i, 1].axis('off')
-            axes[i, 2].imshow(pred_mask, cmap='tab20', vmin=0, vmax=max(1, self.num_classes - 1))
+            axes[i, 2].imshow(pred_disp, cmap=cmap, vmin=0, vmax=vmax)
             axes[i, 2].set_title("Pred"); axes[i, 2].axis('off')
 
         plt.tight_layout()
@@ -490,11 +508,14 @@ class SegEvaluator(Evaluator):
         if n_viz == 1:
             axes = np.expand_dims(axes, 0)
 
+        cmap = self._make_seg_cmap()
+        vmax = max(1, self.num_classes - 1)
         for i, (img_rgb, pred_mask, gt_mask, label) in enumerate(viz_samples[:n_viz]):
-            axes[i, 0].imshow(img_rgb);             axes[i, 0].set_title("Input");  axes[i, 0].axis("off")
-            axes[i, 1].imshow(gt_mask,   cmap="tab20", vmin=0, vmax=max(1, self.num_classes - 1))
+            gt_disp, pred_disp = self._mask_for_viz(gt_mask, pred_mask)
+            axes[i, 0].imshow(img_rgb);              axes[i, 0].set_title("Input");  axes[i, 0].axis("off")
+            axes[i, 1].imshow(gt_disp,   cmap=cmap, vmin=0, vmax=vmax)
             axes[i, 1].set_title("GT");   axes[i, 1].axis("off")
-            axes[i, 2].imshow(pred_mask, cmap="tab20", vmin=0, vmax=max(1, self.num_classes - 1))
+            axes[i, 2].imshow(pred_disp, cmap=cmap, vmin=0, vmax=vmax)
             axes[i, 2].set_title("Pred"); axes[i, 2].axis("off")
 
         plt.tight_layout()

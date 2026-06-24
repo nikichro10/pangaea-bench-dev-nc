@@ -4,6 +4,7 @@ encoder_weights: ./pretrained_models/carl_ssl_checkpoint.ckpt
 download_url: https://zenodo.org/records/18671944/files/ssl_checkpoint_carl.ckpt
 
 input_size: 224
+image_norm: true
 embed_dim: 768      # EVA02-base spatial encoder output dim
 output_dim: 768
 patch_size: 8

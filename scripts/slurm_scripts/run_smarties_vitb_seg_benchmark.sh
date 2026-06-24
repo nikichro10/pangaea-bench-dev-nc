@@ -139,7 +139,7 @@ declare -A datasets=(
 # Use "all" to run everything, or list specific dataset names.
 # Example: RUN_DATASETS="hlsburnscars sen1floods11"
 # -----------------------------------------------------------------------------
-RUN_DATASETS="all"
+RUN_DATASETS="ai4smallfarms"  # all, or space-separated list of dataset keys
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS

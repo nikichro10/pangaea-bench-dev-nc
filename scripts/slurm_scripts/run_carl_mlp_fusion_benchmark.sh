@@ -1,19 +1,17 @@
 #!/bin/bash
 
 # -----------------------------------------------------------------------------
-# CARL MLP-fusion linear-probe benchmark
-# Full 9-dataset suite. Encoder is frozen throughout.
-# Multi-temporal datasets use LTAE temporal fusion (seg_mlp_fusion).
-# spacenet7cd uses SiamMLPFusionDecoder (concat strategy, change_detection task).
+# CARL MLP-fusion benchmark
+# Full 9-dataset suite.
+# Uses carl_no_internal_norm (image_norm=false) + dataset-wise NormalizeMeanStd
+# so normalization is directly comparable to all other encoders.
 # CARL is optical-only — SAR bands are dropped via BandFilter.
-# NormalizeMeanStd is intentionally omitted — CARL applies per-image
-# zero-mean unit-variance standardization internally.
 # -----------------------------------------------------------------------------
 
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/carl_mlp_fusion"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
 readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/pangaea_full_seg/mlp_fusion/carl_mlp_fusion"
-readonly ENCODER="carl"
+readonly ENCODER="carl_no_internal_norm"
 readonly ENCODER_IMSIZE=224
 
 readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c05s05,hpdar04c06s02"
@@ -24,11 +22,11 @@ choose_preprocessing() {
     local -r dataset=$1
     local -r dataset_size=$2
     if [ "$dataset_size" -le "$ENCODER_IMSIZE" ]; then
-        echo "seg_resize_no_norm"
+        echo "seg_resize"
     elif [ "$dataset" = "mados" ]; then
-        echo "seg_focus_crop_no_norm"
+        echo "seg_focus_crop"
     else
-        echo "seg_default_no_norm"
+        echo "seg_default"
     fi
 }
 
@@ -120,10 +118,10 @@ declare -A datasets=(
     ["croptypemapping"]="segmentation seg_mlp_fusion     cross_entropy  6:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection seg_siam_mlp_fusion dice           4:00:00"
     ["ai4smallfarms"]="segmentation   seg_mlp_fusion      weighted_bce   6:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
-    ["fivebillionpixels"]="segmentation seg_mlp_fusion   cross_entropy  6:00:00"
+    ["fivebillionpixels"]="segmentation seg_mlp_fusion   cross_entropy  12:00:00"
 )
 
-RUN_DATASETS="all"
+RUN_DATASETS="fivebillionpixels"  # rerunning fivebillionpixels with extended time limit
 
 for dataset in "${!datasets[@]}"; do
     if [ "$RUN_DATASETS" != "all" ]; then

@@ -1,0 +1,4 @@
+encoder,HLS-BurnScars,Sen1Floods11,MADOS,PASTIS,DynamicEarthNet,CropTypeMapping,SpaceNet7-CD,AI4SmallFarms,FiveBillionPixels,Mean
+DOFA,74.79,73.56,57.42,22.28,34.98,28.31,,34.77,66.84,49.12
+DOFAv2,76.29,72.51,53.05,21.65,33.17,21.6,,34.95,67.21,47.55
+DINOv2,74.1,68.18,57.28,13.94,23.51,19.8,58.27,34.2,62.35,45.74

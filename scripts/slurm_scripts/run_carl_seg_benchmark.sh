@@ -3,16 +3,15 @@
 # -----------------------------------------------------------------------------
 # CARL segmentation benchmark
 # Full 9-dataset suite matching the panopticon/dofa/smarties benchmark setup.
-# NormalizeMeanStd is intentionally omitted — CARL applies per-image
-# zero-mean unit-variance standardization internally, so dataset-level
-# normalization would be overridden anyway.
+# Uses carl_no_internal_norm (image_norm=false) + dataset-wise NormalizeMeanStd
+# so CARL's normalization is directly comparable to all other encoders.
 # CARL is optical-only — SAR bands are dropped via BandFilter.
 # -----------------------------------------------------------------------------
 
 readonly LOG_DIR="/dss/dsshome1/08/di54zop/pangaea-bench_dev/scripts/logs/carl_seg"
 readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
 readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/pangaea_full_seg/upernet/carl_seg"
-readonly ENCODER="carl"
+readonly ENCODER="carl_no_internal_norm"
 readonly ENCODER_IMSIZE=224
 
 readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c05s05,hpdar04c06s02"
@@ -21,19 +20,18 @@ mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
 # -----------------------------------------------------------------------------
 # PREPROCESSING SELECTION
-# Uses _no_norm variants: BandFilter only, no NormalizeMeanStd.
-# CARL normalizes per-image internally (_standardize in carl_encoder.py).
+# Standard NormalizeMeanStd (dataset-wise stats), same as all other encoders.
 # -----------------------------------------------------------------------------
 choose_preprocessing() {
     local -r dataset=$1
     local -r dataset_size=$2
 
     if [ "$dataset_size" -le "$ENCODER_IMSIZE" ]; then
-        echo "seg_resize_no_norm"
+        echo "seg_resize"
     elif [ "$dataset" = "mados" ]; then
-        echo "seg_focus_crop_no_norm"
+        echo "seg_focus_crop"
     else
-        echo "seg_default_no_norm"
+        echo "seg_default"
     fi
 }
 
@@ -140,7 +138,7 @@ declare -A datasets=(
 # -----------------------------------------------------------------------------
 # SELECT DATASETS TO RUN
 # -----------------------------------------------------------------------------
-RUN_DATASETS="all"
+RUN_DATASETS="fivebillionpixels"
 
 # -----------------------------------------------------------------------------
 # SUBMIT JOBS

@@ -1,0 +1,37 @@
+_target_: pangaea.encoders.smarties_encoder.SMARTIES_Encoder
+
+encoder_weights: ./pretrained_models/smarties-v1-vitb.safetensors
+download_url: https://huggingface.co/gsumbul/SMARTIES-v1-ViT-B/resolve/main/smarties-v1-vitb.safetensors
+
+embed_dim: 768
+input_size: 224
+patch_size: 16
+depth: 12
+num_heads: 12
+mlp_ratio: 4.0
+
+# Full S2 optical band set — missing bands are zero-padded by BandPadding preprocessing.
+# Note: B10 (SWIR cirrus) has no SMARTIES projector and is silently skipped internally.
+input_bands:
+  optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

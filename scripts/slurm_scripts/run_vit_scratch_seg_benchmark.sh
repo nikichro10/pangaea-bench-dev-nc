@@ -16,7 +16,7 @@ readonly DATASET_PATH="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets"
 readonly WORK_DIR="/dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/pangaea_full_seg/upernet/vit_scratch_seg"
 readonly ENCODER_IMSIZE=224
 
-readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c05s05,hpdar04c06s02"
+readonly SLURM_EXCLUDE="hpdar04c04s02,hpdar04c02s05,hpdar04c01s01,hpdar04c01s02,hpdar04c01s03,hpdar04c03s04,hpdar04c03s05,hpdar04c05s03,hpdar04c05s05,hpdar04c06s02"
 
 mkdir -p "${LOG_DIR}" "${WORK_DIR}"
 
@@ -125,7 +125,7 @@ declare -A datasets=(
     ["fivebillionpixels"]="segmentation vit_scratch   seg_upernet          cross_entropy  10:00:00"
 )
 
-RUN_DATASETS="mados pastis sen1floods11 dynamicen croptypemapping ai4smallfarms fivebillionpixels"
+RUN_DATASETS="pastis croptypemapping"
 
 for dataset in "${!datasets[@]}"; do
     if [ "$RUN_DATASETS" != "all" ]; then

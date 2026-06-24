@@ -1,0 +1,60 @@
+_target_: pangaea.encoders.dofav2_encoder.DOFAv2_Encoder
+encoder_weights: ./pretrained_models/dofav2_vit_base_e150.pth
+download_url: https://huggingface.co/earthflow/DOFA/resolve/main/dofav2_vit_base_e150.pth
+
+embed_dim: 768
+input_size: 224
+patch_size: 14
+depth: 12
+num_heads: 12
+mlp_ratio: 4
+use_norm: False
+
+# Full S2 optical band set — missing bands are zero-padded by BandPadding preprocessing.
+input_bands:
+  optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+
+wave_list:
+  optical:
+    B1: 0.44
+    B2: 0.49
+    B3: 0.56
+    B4: 0.665
+    B5: 0.705
+    B6: 0.74
+    B7: 0.783
+    B8: 0.832
+    B8A: 0.864
+    B9: 0.945
+    B10: 1.373
+    B11: 1.61
+    B12: 2.20
+  sar:
+    VV: 3.75
+    VH: 3.75
+    ASC_VV: 3.75
+    ASC_VH: 3.75
+    DSC_VV: 3.75
+    DSC_VH: 3.75
+    VV-VH: 3.75
+
+output_layers:
+  - 4
+  - 6
+  - 10
+  - 11
+
+output_dim: 768
