@@ -1,0 +1,21 @@
+_target_: pangaea.encoders.dinov3_encoder.DINOv3_Encoder
+timm_model: vit_large_patch16_dinov3.sat493m
+encoder_weights: ./pretrained_models/dinov3_vitl16_sat493m.safetensors
+download_url: https://huggingface.co/timm/vit_large_patch16_dinov3.sat493m/resolve/main/model.safetensors
+
+embed_dim: 1024
+input_size: 224
+
+input_bands:
+  optical:
+    - B4
+    - B3
+    - B2
+
+output_layers:
+  - 5
+  - 11
+  - 17
+  - 23
+
+output_dim: 1024

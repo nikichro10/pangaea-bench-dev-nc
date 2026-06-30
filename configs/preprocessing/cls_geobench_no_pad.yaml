@@ -1,10 +1,7 @@
 train:
     _target_: pangaea.engine.data_preprocessor.Preprocessor
     preprocessor_cfg:
-        - _target_: pangaea.engine.data_preprocessor.RandomResizedCropToEncoder
-          scale: [0.8, 1.0]
-          resize_target: false
-        - _target_: pangaea.engine.data_preprocessor.RandomHorizontalFlip
+        - _target_: pangaea.engine.data_preprocessor.ResizeToEncoder
         - _target_: pangaea.engine.data_preprocessor.BandFilter
         - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
 

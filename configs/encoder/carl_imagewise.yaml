@@ -1,0 +1,60 @@
+_target_: pangaea.encoders.carl_encoder.CARLEncoder
+
+encoder_weights: ./pretrained_models/carl_ssl_checkpoint.ckpt
+download_url: https://zenodo.org/records/18671944/files/ssl_checkpoint_carl.ckpt
+
+input_size: 224
+image_norm: true
+embed_dim: 768      # EVA02-base spatial encoder output dim
+output_dim: 768
+patch_size: 8
+
+# 4 intermediate outputs from the 8-block spatial encoder (0-indexed)
+output_layers:
+  - 1
+  - 3
+  - 5
+  - 7
+
+input_bands:
+  optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+
+# Spectral encoder (wavelength-aware transformer)
+spec_encoder_kwargs:
+  embed_dim: 384
+  depth: 8
+  num_heads: 6
+  layer_scale: 0.0001
+  pos_enc_sigma: 3
+  n_queries: 8
+  qkv_bias: true
+  ffn_bias: true
+  drop_path_rate: 0.
+  proj_drop: 0.
+  drop: 0.
+  attn_drop: 0.
+
+# Spatial encoder (EVA02-base, first 8 blocks)
+spat_encoder_kwargs:
+  model_name: timm/eva02_base_patch14_224.mim_in22k
+  depth: 8
+  model_kwargs:
+    drop_rate: 0.
+    pos_drop_rate: 0.
+    patch_drop_rate: 0.
+    proj_drop_rate: 0.
+    attn_drop_rate: 0.
+    drop_path_rate: 0.
