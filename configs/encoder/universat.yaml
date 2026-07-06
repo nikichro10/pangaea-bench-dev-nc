@@ -1,0 +1,72 @@
+_target_: pangaea.encoders.universat_encoder.UniverSatEncoder
+encoder_weights: ./pretrained_models/universat_base.safetensors
+download_url: https://huggingface.co/g-astruc/UniverSat/resolve/main/model.safetensors
+
+input_size: 224
+
+# Patch size in metres. scale = patch_size_m / 10 (UniverSat's own unit).
+# 160m gives a 14x14 token grid for 224px inputs at 10m/pixel (S1/S2),
+# matching the 224/16=14 grid other ViT-style encoders in this repo use.
+patch_size_m: 160.0
+
+input_bands: ${dataset.bands}
+
+# Copied verbatim from configs/encoder/dofa.yaml's optical wave_list (same
+# µm values) for a fair comparison against DOFA. UniverSat conditions each
+# optical channel on its wavelength dynamically (MPFourier), so arbitrary
+# band subsets work, same as DOFA.
+wave_list:
+  optical:
+    B1: 0.44
+    B2: 0.49
+    B3: 0.56
+    B4: 0.665
+    B5: 0.705
+    B6: 0.74
+    B7: 0.783
+    B8: 0.832
+    B8A: 0.864
+    B9: 0.945
+    B10: 1.373
+    B11: 1.61
+    B12: 2.20
+    L8_B2: 0.482
+    L8_B3: 0.562
+    L8_B4: 0.655
+    L8_B5: 0.865
+    L8_B6: 1.609
+    L8_B7: 2.201
+  # UniverSat has no continuous wavelength conditioning for SAR: only 8
+  # fixed learned embeddings exist (VV, VH, Ratio_VV_VH, HH, HV,
+  # Ratio_HH_HV, nDEM, DSM). Ascending/descending passes collapse onto the
+  # same VV/VH embedding since UniverSat doesn't distinguish them.
+  sar:
+    VV: VV
+    VH: VH
+    ASC_VV: VV
+    ASC_VH: VH
+    DSC_VV: VV
+    DSC_VH: VH
+    VV-VH: Ratio_VV_VH
+
+# Physical resolution (m/pixel) per modality. Matches the Sentinel-1/2
+# native GSD used across most pangaea datasets; override per-dataset (e.g.
+# `encoder.input_res.optical=30`) if a specific dataset's optical/SAR
+# imagery was resampled to a different GSD (e.g. Landsat-based datasets).
+input_res:
+  optical: 10.0
+  sar: 10.0
+
+# Depths within the 12 self-attention blocks to snapshot. Must be ascending
+# and end at 11 (the last block) -- that last entry doesn't take a raw
+# snapshot, it instead keeps running through UniverSat's own Bilinear_out
+# (no-op resize here) + CA_Sub (sub-patch skip-connection enrichment), so
+# the deepest feature is the model's actual intended representation, not
+# just another raw activation. See universat_encoder.py's docstring.
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768

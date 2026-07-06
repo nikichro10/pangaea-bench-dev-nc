@@ -126,7 +126,7 @@ declare -A datasets=(
     ["croptypemapping"]="segmentation vit_scratch_mi_p8 seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["spacenet7cd"]="change_detection vit_scratch_p8    seg_siamupernet_conc dice           8:00:00"
     ["ai4smallfarms"]="segmentation   vit_scratch_p8     seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
-    ["fivebillionpixels"]="segmentation vit_scratch_p8   seg_upernet          cross_entropy  14:00:00"
+    ["fivebillionpixels"]="segmentation vit_scratch_p8   seg_upernet          cross_entropy  18:00:00"
 )
 
 RUN_DATASETS="fivebillionpixels"  # "all" or space-separated list of datasets to run
