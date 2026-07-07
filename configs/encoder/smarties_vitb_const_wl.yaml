@@ -1,0 +1,39 @@
+_target_: pangaea.encoders.smarties_encoder.SMARTIES_Encoder
+
+encoder_weights: ./pretrained_models/smarties-v1-vitb.safetensors
+download_url: https://huggingface.co/gsumbul/SMARTIES-v1-ViT-B/resolve/main/smarties-v1-vitb.safetensors
+
+embed_dim: 768
+input_size: 224
+patch_size: 16
+depth: 12
+num_heads: 12
+mlp_ratio: 4.0
+
+input_bands: ${dataset.bands}
+
+output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+
+output_dim: 768
+
+# Constant-wavelength ablation: all S2 optical bands forced to projector 4
+# (green_2, 524–595 nm ≈ 550 nm) so the encoder sees no spectral identity signal.
+proj_idx_override:
+  optical:
+    B1:  4
+    B2:  4
+    B3:  4
+    B4:  4
+    B5:  4
+    B6:  4
+    B7:  4
+    B8:  4
+    B8A: 4
+    B9:  4
+    B10: 4
+    B11: 4
+    B12: 4

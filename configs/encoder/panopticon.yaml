@@ -32,6 +32,15 @@ wave_list:
     L8_B5: 864.613
     L8_B6: 1608.747
     L8_B7: 2203.505
+    # PlanetScope PS2 (SpaceNet7)
+    PS_Blue:  485.0
+    PS_Green: 545.0
+    PS_Red:   630.0
+    # GaoFen-2 (FiveBillionPixels)
+    GF2_Blue:  485.0
+    GF2_Green: 555.0
+    GF2_Red:   660.0
+    GF2_NIR:   830.0
   sar:
     VV: -1
     VH: -2

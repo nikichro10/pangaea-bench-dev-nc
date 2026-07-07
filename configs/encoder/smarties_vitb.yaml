@@ -12,6 +12,11 @@ mlp_ratio: 4.0
 
 input_bands: ${dataset.bands}
 
+# Empty dict enables +encoder.proj_idx_override.optical.{band}=val CLI overrides
+# for permutation ablations without requiring a separate config file.
+proj_idx_override:
+  optical: {}
+
 output_layers:
   - 3
   - 5

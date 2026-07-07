@@ -603,6 +603,9 @@ class SegTrainer(Trainer):
         Returns:
             torch.Tensor: loss value.
         """
+        if logits.shape[1] == 1:
+            # BCEWithLogitsLoss requires matching shapes and float targets
+            return self.criterion(logits.squeeze(dim=1), target.float())
         return self.criterion(logits, target)
 
     @torch.no_grad()

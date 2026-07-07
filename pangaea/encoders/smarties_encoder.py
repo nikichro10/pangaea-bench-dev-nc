@@ -188,6 +188,15 @@ _BAND_TO_PROJ_IDX: dict[str, dict[str, int]] = {
         "L8_B5": 11,  # near_infrared_3 (843–886 nm; L8 NIR ~865 nm)
         "L8_B6": 13,  # short_wave_infrared_3 (1516–1704 nm; L8 SWIR1 ~1609 nm)
         "L8_B7": 14,  # short_wave_infrared_4 (2002–2376 nm; L8 SWIR2 ~2201 nm)
+        # PlanetScope PS2 — broad-band RGB-type sensor (SpaceNet7)
+        "PS_Blue":  2,   # blue_3  (430–545 nm; PS blue 455–515 nm)
+        "PS_Green": 3,   # green_1 (466–620 nm; PS green 500–590 nm)
+        "PS_Red":   5,   # red_1   (590–710 nm; PS red 590–670 nm)
+        # GaoFen-2 PMS — narrow-band satellite sensor (FiveBillionPixels)
+        "GF2_Blue":  1,  # blue_1  (427–558 nm; GF2 blue 450–520 nm)
+        "GF2_Green": 4,  # green_2 (524–595 nm; GF2 green 520–590 nm)
+        "GF2_Red":   6,  # red_2   (634–696 nm; GF2 red 630–690 nm)
+        "GF2_NIR":   9,  # near_infrared_1 (728–938 nm; GF2 NIR 770–890 nm)
     },
     "sar": {
         "VV":     15,

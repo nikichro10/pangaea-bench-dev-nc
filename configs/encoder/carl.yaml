@@ -16,21 +16,12 @@ output_layers:
   - 5
   - 7
 
-input_bands:
-  optical:
-    - B1
-    - B2
-    - B3
-    - B4
-    - B5
-    - B6
-    - B7
-    - B8
-    - B8A
-    - B9
-    - B10
-    - B11
-    - B12
+input_bands: ${dataset.bands}
+
+# Empty dict enables +encoder.band_wavelength_overrides.optical.{band}=val CLI overrides
+# for permutation ablations without requiring a separate config file.
+band_wavelength_overrides:
+  optical: {}
 
 # Spectral encoder (wavelength-aware transformer)
 spec_encoder_kwargs:

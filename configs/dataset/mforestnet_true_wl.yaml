@@ -1,0 +1,48 @@
+_target_: pangaea.datasets.geobench.mforestnet.mForestnet
+dataset_name: mForestnet
+root_path: ${oc.env:GEO_BENCH_DIR}/classification_v1.0/m-forestnet
+download_url: "recursix/geo-bench-1.0"
+auto_download: True
+
+num_classes: 12
+img_size: 332
+multi_temporal: False
+multi_modal: False
+
+ignore_index: -100
+classes:  [
+    "Oil palm plantation",
+    "Timber plantation",
+    "Other large-scale plantations",
+    "Grassland shrubland",
+    "Small-scale agriculture",
+    "Small-scale mixed plantation",
+    "Small-scale oil palm plantation",
+    "Mining",
+    "Fish pond",
+    "Logging",
+    "Secondary forest",
+    "Other",
+]
+
+distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+# True Landsat-8 OLI band names (same 6-band order as mforestnet.yaml)
+bands:
+  optical:
+    - L8_B2   # Blue,   ~482 nm
+    - L8_B3   # Green,  ~562 nm
+    - L8_B4   # Red,    ~655 nm
+    - L8_B5   # NIR,    ~865 nm
+    - L8_B6   # SWIR-1, ~1609 nm
+    - L8_B7   # SWIR-2, ~2201 nm
+
+data_mean:
+  optical: [72.852258, 83.677155, 77.58181, 123.987442, 91.536942, 74.719202]
+data_std:
+  optical: [15.837172547567825, 14.788812599596188, 16.100543441881086, 16.35234883118129, 13.7882739778638, 12.69131413539181]
+
+data_min:
+  optical: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+data_max:
+  optical: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
