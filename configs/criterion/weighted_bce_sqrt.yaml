@@ -1,0 +1,4 @@
+_target_: pangaea.utils.losses.WeightedBCELoss
+ignore_index: ${dataset.ignore_index}
+distribution: ${dataset.distribution}
+pos_weight_power: 0.5  # sqrt(neg/pos) instead of raw neg/pos -- dampens over-aggressive reweighting

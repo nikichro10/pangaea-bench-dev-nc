@@ -53,18 +53,30 @@ class WeightedBCELoss(torch.nn.Module):
     """BCEWithLogitsLoss with pos_weight derived from class distribution.
 
     For binary segmentation (num_classes=1 / single sigmoid output).
-    pos_weight = distribution[0] / distribution[1] (neg_freq / pos_freq),
-    which upweights the minority (positive) class.
+    pos_weight = (distribution[0] / distribution[1]) ** pos_weight_power
+    (neg_freq / pos_freq), which upweights the minority (positive) class.
+    pos_weight_power < 1 dampens the raw inverse-frequency ratio -- e.g. 0.5
+    gives sqrt(neg/pos), a common fix when the raw ratio is so large (extreme
+    class imbalance) that it pushes the model toward high-precision/low-recall
+    predictions instead of learning a well-calibrated decision boundary.
 
     Args:
         ignore_index (int): Label value to exclude from the loss.
         distribution (list[float]): [neg_class_freq, pos_class_freq].
+        pos_weight_power (float): Exponent applied to the raw neg/pos ratio.
+            1.0 (default) = raw inverse-frequency weighting.
     """
 
-    def __init__(self, ignore_index: int, distribution: list[float]) -> None:
+    def __init__(
+        self,
+        ignore_index: int,
+        distribution: list[float],
+        pos_weight_power: float = 1.0,
+    ) -> None:
         super().__init__()
         self.ignore_index = ignore_index
-        self.pos_weight = torch.tensor([distribution[0] / distribution[1]])
+        raw_ratio = distribution[0] / distribution[1]
+        self.pos_weight = torch.tensor([raw_ratio**pos_weight_power])
 
     def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         # logits: (B, 1, H, W), target: (B, H, W) with integer labels

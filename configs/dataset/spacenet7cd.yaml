@@ -22,9 +22,11 @@ num_classes: 1
 classes:
   - No Change
   - Change
-distribution:  # TODO: update for CD
-  - 0.92530769
-  - 0.07469231
+# measured from 300 random train-split change-label samples (2026-09):
+# ~0.63% of pixels are "Change" -- far rarer than the stale placeholder below implied
+distribution:
+  - 0.99366
+  - 0.00634
 
 # data stats
 bands:

@@ -1,0 +1,66 @@
+_target_: pangaea.datasets.utae_dynamicen.DynamicEarthNet
+dataset_name: DynamicEarthNet
+root_path: ./data/DynamicEarthNet
+download_url: None
+auto_download: False
+
+img_size: 1024
+multi_temporal: 6
+multi_modal: False
+
+# classes
+ignore_index: -1
+num_classes: 6
+classes:
+  - impervious surface
+  - agriculture
+  - forest & other vegetation
+  - wetlands
+  - soil
+  - water
+distribution:
+  - 0.071
+  - 0.103
+  - 0.449
+  - 0.07
+  - 0.28
+  - 0.08
+
+sample_dates:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+
+# data stats — same images as dynamicen.yaml, only the 4th band's name/wavelength
+# is corrected. The imagery is Planet Fusion Monitoring (PF-SR), which per Planet's
+# product spec (Blue 0.45-0.51um, Green 0.53-0.59um, Red 0.64-0.67um, NIR 0.85-0.88um,
+# center ~0.865um) is NBAR-harmonized to resemble Sentinel-2, so B2/B3/B4 already match
+# well — but the NIR band was mislabeled B5 (Vegetation Red Edge, 0.705um) instead of
+# B8A (Narrow NIR, 0.865um), which lands squarely in Fusion's stated NIR range.
+bands:
+  optical:
+    - B2
+    - B3
+    - B4
+    - B8A   # NIR, 0.85-0.88um (Planet Fusion spec) -> matches S2 B8A (0.865um)
+
+data_mean:
+  optical:
+    - 671.260559082031
+    - 915.618408203125
+    - 1042.59240722656
+    - 2605.20922851562
+data_std:
+  optical:
+    - 596.943908691406
+    - 715.548767089843
+    - 957.958435058593
+    - 1059.90319824218
+
+data_min:
+  optical: [0.0000, 0.0000, 0.0000, 0.0000]
+data_max:
+  optical: [0.0000, 0.0000, 0.0000, 0.0000]

@@ -87,6 +87,7 @@ launch_job() {
 #SBATCH --chdir=/dss/dsshome1/08/di54zop/pangaea-bench_dev
 
 export HYDRA_FULL_ERROR=1
+export WANDB_MODE=offline
 
 module add micromamba
 eval "\$(micromamba shell hook --shell bash)"
@@ -121,12 +122,12 @@ declare -A datasets=(
     ["pastis"]="segmentation         vit_scratch     seg_mlp_fusion      cross_entropy  6:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      vit_scratch     seg_mlp_fusion      cross_entropy  12:00:00"
     ["croptypemapping"]="segmentation vit_scratch    seg_mlp_fusion      cross_entropy  6:00:00 task.evaluator.inference_mode=whole"
-    ["spacenet7cd"]="change_detection vit_scratch    seg_siam_mlp_fusion dice           4:00:00"
+    ["spacenet7cd"]="change_detection vit_scratch    seg_siam_mlp_fusion weighted_bce_sqrt           4:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["ai4smallfarms"]="segmentation   vit_scratch     seg_mlp_fusion      weighted_bce   6:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation vit_scratch   seg_mlp_fusion      cross_entropy  6:00:00"
 )
 
-RUN_DATASETS="pastis dynamicen croptypemapping mados spacenet7cd ai4smallfarms fivebillionpixels"  # hlsburnscars/sen1floods11 already done
+RUN_DATASETS="${RUN_DATASETS:-pastis dynamicen croptypemapping mados spacenet7cd ai4smallfarms fivebillionpixels}"  # hlsburnscars/sen1floods11 already done
 
 for dataset in "${!datasets[@]}"; do
     if [ "$RUN_DATASETS" != "all" ]; then

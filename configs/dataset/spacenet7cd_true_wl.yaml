@@ -22,9 +22,11 @@ num_classes: 1
 classes:
   - No Change
   - Change
+# measured from 300 random train-split change-label samples (2026-09),
+# same measurement as spacenet7cd.yaml -- identical imagery, only band labels differ
 distribution:
-  - 0.92530769
-  - 0.07469231
+  - 0.99366
+  - 0.00634
 
 # True PlanetScope PS2 band names (same order and stats as spacenet7cd.yaml)
 bands:

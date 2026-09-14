@@ -89,6 +89,7 @@ launch_job() {
 #SBATCH --chdir=/dss/dsshome1/08/di54zop/pangaea-bench_dev
 
 export HYDRA_FULL_ERROR=1
+export WANDB_MODE=offline
 
 module add micromamba
 eval "\$(micromamba shell hook --shell bash)"
@@ -123,12 +124,12 @@ declare -A datasets=(
     ["pastis"]="segmentation         vit_scratch_mi  seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
     ["dynamicen"]="segmentation      vit_scratch_mi  seg_upernet_mt_ltae  cross_entropy  24:00:00"
     ["croptypemapping"]="segmentation vit_scratch_mi seg_upernet_mt_ltae  cross_entropy  12:00:00 task.evaluator.inference_mode=whole"
-    ["spacenet7cd"]="change_detection vit_scratch    seg_siamupernet_conc dice           8:00:00"
+    ["spacenet7cd"]="change_detection vit_scratch    seg_siamupernet_conc weighted_bce_sqrt           8:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["ai4smallfarms"]="segmentation   vit_scratch     seg_upernet          weighted_bce   10:00:00 task.trainer.best_metric_key=IoU data_replicate=2"
     ["fivebillionpixels"]="segmentation vit_scratch   seg_upernet          cross_entropy  10:00:00"
 )
 
-RUN_DATASETS="pastis"
+RUN_DATASETS="${RUN_DATASETS:-pastis}"
 
 for dataset in "${!datasets[@]}"; do
     if [ "$RUN_DATASETS" != "all" ]; then
