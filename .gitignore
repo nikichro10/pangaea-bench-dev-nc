@@ -28,3 +28,10 @@ data/mados/splits/*
 slurm-*.out
 core.*
 scripts/logs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large generated outputs
+scripts/qualitative/out/
+notebooks/figures/candidates/
