@@ -1,0 +1,224 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: IoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+dataset:
+  _target_: pangaea.datasets.spacenet7.SN7CD
+  dataset_name: SN7CD
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/spacenet7cd
+  download_url: https://drive.google.com/uc?id=1BADSEjxYKFZZlM-tEkRUfHvHi5XdaVV9
+  auto_download: true
+  img_size: 256
+  domain_shift: true
+  i_split: 768
+  j_split: 512
+  multi_temporal: 2
+  multi_modal: false
+  dataset_multiplier: 1
+  minimum_temporal_gap: 5
+  ignore_index: -1
+  num_classes: 1
+  classes:
+  - No Change
+  - Change
+  distribution:
+  - 0.99366
+  - 0.00634
+  bands:
+    optical:
+    - B4
+    - B3
+    - B2
+  data_mean:
+    optical:
+    - 121.826
+    - 106.52838
+    - 78.372116
+  data_std:
+    optical:
+    - 56.717068
+    - 44.517075
+    - 40.451515
+  data_min:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+  data_max:
+    optical:
+    - 255.0
+    - 255.0
+    - 255.0
+encoder:
+  _target_: pangaea.encoders.copernicus_fm_encoder.CopernicusFM_Encoder
+  encoder_weights: ./pretrained_models/CopernicusFM_ViT_base_varlang_e100.pth
+  download_url: https://huggingface.co/wangyi111/Copernicus-FM/resolve/main/CopernicusFM_ViT_base_varlang_e100.pth
+  embed_dim: 768
+  depth: 12
+  num_heads: 12
+  patch_size: 16
+  wv_planes: 128
+  mlp_ratio: 4.0
+  input_size: 224
+  input_bands: ${dataset.bands}
+  output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+  output_dim: 768
+  wave_list:
+    optical:
+      B1: 443
+      B2: 490
+      B3: 560
+      B4: 665
+      B5: 705
+      B6: 740
+      B7: 783
+      B8: 842
+      B8A: 865
+      B9: 945
+      B10: 1375
+      B11: 1610
+      B12: 2190
+      L8_B2: 482
+      L8_B3: 562
+      L8_B4: 655
+      L8_B5: 865
+      L8_B6: 1609
+      L8_B7: 2201
+      PS_Blue: 485
+      PS_Green: 545
+      PS_Red: 630
+      GF2_Blue: 485
+      GF2_Green: 555
+      GF2_Red: 660
+      GF2_NIR: 830
+    sar:
+      VV: 55500000
+      VH: 55500000
+      ASC_VV: 55500000
+      ASC_VH: 55500000
+      DSC_VV: 55500000
+      DSC_VH: 55500000
+      VV-VH: 55500000
+  bandwidth_list:
+    optical:
+      B1: 20
+      B2: 65
+      B3: 35
+      B4: 30
+      B5: 15
+      B6: 15
+      B7: 20
+      B8: 115
+      B8A: 20
+      B9: 20
+      B10: 30
+      B11: 90
+      B12: 180
+      L8_B2: 60
+      L8_B3: 57
+      L8_B4: 37
+      L8_B5: 28
+      L8_B6: 85
+      L8_B7: 187
+      PS_Blue: 60
+      PS_Green: 90
+      PS_Red: 80
+      GF2_Blue: 70
+      GF2_Green: 70
+      GF2_Red: 60
+      GF2_NIR: 120
+    sar:
+      VV: 1000000
+      VH: 1000000
+      ASC_VV: 1000000
+      ASC_VH: 1000000
+      DSC_VV: 1000000
+      DSC_VH: 1000000
+      VV-VH: 1000000
+decoder:
+  _target_: pangaea.decoders.upernet.SiamConcUPerNet
+  channels: 512
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStdCustomGlobal
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStdCustomGlobal
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStdCustomGlobal
+criterion:
+  _target_: pangaea.utils.losses.WeightedBCELoss
+  ignore_index: ${dataset.ignore_index}
+  distribution: ${dataset.distribution}
+  pos_weight_power: 0.5
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/ablations/norm_ablation/copernicus_fm_base_customglobal
+seed: 234
+use_wandb: true
+wandb_project: geofm-bench
+wandb_run_id: ly1s2l0q
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 2
+use_final_ckpt: false

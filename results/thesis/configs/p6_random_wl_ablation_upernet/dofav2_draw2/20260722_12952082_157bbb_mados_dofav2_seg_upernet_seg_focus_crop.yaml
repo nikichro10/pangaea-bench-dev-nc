@@ -1,0 +1,248 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: mIoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.mados.MADOS
+  dataset_name: MADOS
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/mados
+  download_url: https://zenodo.org/records/10664073/files/MADOS.zip?download=1
+  auto_download: true
+  img_size: 240
+  multi_temporal: false
+  multi_modal: false
+  ignore_index: -1
+  num_classes: 15
+  classes:
+  - Marine Debris
+  - Dense Sargassum
+  - Sparse Floating Algae
+  - Natural Organic Material
+  - Ship
+  - Oil Spill
+  - Marine Water
+  - Sediment-Laden Water
+  - Foam
+  - Turbid Water
+  - Shallow Water
+  - Waves & Wakes
+  - Oil Platform
+  - Jellyfish
+  - Sea snot
+  distribution:
+  - 0.00336
+  - 0.00241
+  - 0.00336
+  - 0.00142
+  - 0.00775
+  - 0.18452
+  - 0.34775
+  - 0.20638
+  - 0.00062
+  - 0.1169
+  - 0.09188
+  - 0.01309
+  - 0.00917
+  - 0.00176
+  - 0.00963
+  bands:
+    optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B11
+    - B12
+  data_mean:
+    optical:
+    - 0.0582676
+    - 0.05223386
+    - 0.04381474
+    - 0.0357083
+    - 0.03412902
+    - 0.03680401
+    - 0.03999107
+    - 0.03566642
+    - 0.03965081
+    - 0.0267993
+    - 0.01978944
+  data_std:
+    optical:
+    - 0.03240627
+    - 0.03432253
+    - 0.0354812
+    - 0.0375769
+    - 0.03785412
+    - 0.04992323
+    - 0.05884482
+    - 0.05545856
+    - 0.06423746
+    - 0.04211187
+    - 0.03019115
+  data_min:
+    optical:
+    - 0.0
+    - -0.0318
+    - 0.0
+    - -0.0088
+    - -0.0143
+    - -0.0116
+    - -0.01
+    - -0.0071
+    - -0.0066
+    - -0.0004
+    - -0.0017
+  data_max:
+    optical:
+    - 1.1649
+    - 1.4814
+    - 1.9679
+    - 1.9531
+    - 2.1102
+    - 2.5981
+    - 2.8735
+    - 2.378
+    - 2.6617
+    - 1.5348
+    - 1.3859
+encoder:
+  _target_: pangaea.encoders.dofav2_encoder.DOFAv2_Encoder
+  encoder_weights: ./pretrained_models/dofav2_vit_base_e150.pth
+  download_url: https://huggingface.co/earthflow/DOFA/resolve/main/dofav2_vit_base_e150.pth
+  embed_dim: 768
+  input_size: 224
+  patch_size: 14
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4
+  use_norm: false
+  input_bands: ${dataset.bands}
+  wave_list:
+    optical:
+      B1: 0.693149
+      B2: 1.193755
+      B3: 2.111195
+      B4: 1.378592
+      B5: 1.445826
+      B6: 0.540555
+      B7: 1.931067
+      B8: 2.36185
+      B8A: 1.677627
+      B9: 0.945
+      B10: 1.373
+      B11: 1.291454
+      B12: 0.955193
+      L8_B2: 0.482
+      L8_B3: 0.562
+      L8_B4: 0.655
+      L8_B5: 0.865
+      L8_B6: 1.609
+      L8_B7: 2.201
+      PS_Blue: 0.485
+      PS_Green: 0.545
+      PS_Red: 0.63
+      GF2_Blue: 0.485
+      GF2_Green: 0.555
+      GF2_Red: 0.66
+      GF2_NIR: 0.83
+    sar:
+      VV: 3.75
+      VH: 3.75
+      ASC_VV: 3.75
+      ASC_VH: 3.75
+      DSC_VV: 3.75
+      DSC_VH: 3.75
+      VV-VH: 3.75
+  output_layers:
+  - 4
+  - 6
+  - 10
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.upernet.SegUPerNet
+  channels: 512
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.FocusRandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  ignore_index: ${dataset.ignore_index}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/p6_random_wl_ablation_upernet/dofav2_draw2
+seed: 234
+use_wandb: true
+wandb_project: wavelength-ablation
+wandb_run_id: vmggmnvr
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 1
+use_final_ckpt: false

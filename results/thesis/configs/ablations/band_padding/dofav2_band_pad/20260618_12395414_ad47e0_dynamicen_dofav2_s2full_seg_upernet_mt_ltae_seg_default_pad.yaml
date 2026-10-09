@@ -1,0 +1,208 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: mIoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.utae_dynamicen.DynamicEarthNet
+  dataset_name: DynamicEarthNet
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/dynamicen
+  download_url: None
+  auto_download: false
+  img_size: 1024
+  multi_temporal: 6
+  multi_modal: false
+  ignore_index: -1
+  num_classes: 6
+  classes:
+  - impervious surface
+  - agriculture
+  - forest & other vegetation
+  - wetlands
+  - soil
+  - water
+  distribution:
+  - 0.071
+  - 0.103
+  - 0.449
+  - 0.07
+  - 0.28
+  - 0.08
+  sample_dates:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  bands:
+    optical:
+    - B2
+    - B3
+    - B4
+    - B5
+  data_mean:
+    optical:
+    - 671.260559082031
+    - 915.618408203125
+    - 1042.59240722656
+    - 2605.20922851562
+  data_std:
+    optical:
+    - 596.943908691406
+    - 715.548767089843
+    - 957.958435058593
+    - 1059.90319824218
+  data_min:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+  data_max:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+encoder:
+  _target_: pangaea.encoders.dofav2_encoder.DOFAv2_Encoder
+  encoder_weights: ./pretrained_models/dofav2_vit_base_e150.pth
+  download_url: https://huggingface.co/earthflow/DOFA/resolve/main/dofav2_vit_base_e150.pth
+  embed_dim: 768
+  input_size: 224
+  patch_size: 14
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4
+  use_norm: false
+  input_bands:
+    optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+  wave_list:
+    optical:
+      B1: 0.44
+      B2: 0.49
+      B3: 0.56
+      B4: 0.665
+      B5: 0.705
+      B6: 0.74
+      B7: 0.783
+      B8: 0.832
+      B8A: 0.864
+      B9: 0.945
+      B10: 1.373
+      B11: 1.61
+      B12: 2.2
+    sar:
+      VV: 3.75
+      VH: 3.75
+      ASC_VV: 3.75
+      ASC_VH: 3.75
+      DSC_VV: 3.75
+      DSC_VH: 3.75
+      VV-VH: 3.75
+  output_layers:
+  - 4
+  - 6
+  - 10
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.upernet.SegMTUPerNet
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  multi_temporal: ${dataset.multi_temporal}
+  finetune: ${finetune}
+  channels: 512
+  multi_temporal_strategy: ltae
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+    - _target_: pangaea.engine.data_preprocessor.BandPadding
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+    - _target_: pangaea.engine.data_preprocessor.BandPadding
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+    - _target_: pangaea.engine.data_preprocessor.BandPadding
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  ignore_index: ${dataset.ignore_index}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/ablations/band_padding/dofav2_band_pad
+seed: 234
+use_wandb: true
+wandb_project: geofm-bench
+wandb_run_id: m9ymrhzu
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 1
+use_final_ckpt: false

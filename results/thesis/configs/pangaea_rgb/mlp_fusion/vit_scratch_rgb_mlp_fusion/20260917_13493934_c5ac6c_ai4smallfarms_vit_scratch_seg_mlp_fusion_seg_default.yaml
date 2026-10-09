@@ -1,0 +1,157 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: IoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.ai4smallfarms.AI4SmallFarms
+  dataset_name: AI4SmallFarms
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/ai4smallfarms
+  download_url: https://phys-techsciences.datastations.nl
+  auto_download: true
+  img_size: 496
+  multi_temporal: false
+  multi_modal: false
+  ignore_index: -1
+  num_classes: 1
+  classes:
+  - Background
+  - Crop Field
+  distribution:
+  - 0.72676
+  - 0.27324
+  bands:
+    optical:
+    - B2
+    - B3
+    - B4
+    - B8
+  data_mean:
+    optical:
+    - 750.2136
+    - 1032.7277
+    - 1165.1279
+    - 2416.0448
+  data_std:
+    optical:
+    - 283.3842
+    - 332.728
+    - 518.9025
+    - 702.3791
+  data_max:
+    optical:
+    - 10806.0
+    - 10167.0
+    - 9992.0
+    - 10088.0
+  data_min:
+    optical:
+    - 1.0
+    - 9.0
+    - 1.0
+    - 66.0
+encoder:
+  _target_: pangaea.encoders.vit_encoder.VIT_Encoder
+  encoder_weights: null
+  download_url: null
+  embed_dim: 768
+  input_size: 224
+  patch_size: 16
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4
+  input_bands:
+    optical:
+    - B2
+    - B3
+    - B4
+  output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.seg_mlp_fusion.MLPFusionDecoder
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+  channels: 128
+  multi_temporal: ${dataset.multi_temporal}
+  upsample_mode: bilinear
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+criterion:
+  _target_: pangaea.utils.losses.WeightedBCELoss
+  ignore_index: ${dataset.ignore_index}
+  distribution: ${dataset.distribution}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/pangaea_rgb/mlp_fusion/vit_scratch_rgb_mlp_fusion
+seed: 234
+use_wandb: true
+wandb_project: geofm-bench-rgb
+wandb_run_id: nvlsjjie
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: true
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 2
+use_final_ckpt: false

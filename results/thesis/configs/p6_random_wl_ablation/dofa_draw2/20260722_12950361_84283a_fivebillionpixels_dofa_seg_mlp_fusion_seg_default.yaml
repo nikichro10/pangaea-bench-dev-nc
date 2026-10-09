@@ -1,0 +1,236 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: mIoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.fivebillionpixels.FiveBillionPixels
+  dataset_name: FiveBillionPixels
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/fivebillionpixels
+  download_url: false
+  auto_download: false
+  use_cmyk: false
+  img_size: 520
+  multi_temporal: false
+  multi_modal: false
+  ignore_index: 0
+  num_classes: 25
+  classes:
+  - unlabeled
+  - industrial area
+  - paddy field
+  - irrigated field
+  - dry cropland
+  - garden land
+  - arbor forest
+  - shrub forest
+  - park
+  - natural meadow
+  - artificial meadow
+  - river
+  - urban residential
+  - lake
+  - pond
+  - fish pond
+  - snow
+  - bareland
+  - rural residential
+  - stadium
+  - square
+  - road
+  - overpass
+  - railway station
+  - airport
+  distribution:
+  - 0.0
+  - 0.0368
+  - 0.0253
+  - 0.3567
+  - 0.0752
+  - 0.0095
+  - 0.0694
+  - 0.0096
+  - 0.0004
+  - 0.0055
+  - 0.0025
+  - 0.0568
+  - 0.0548
+  - 0.1396
+  - 0.0102
+  - 0.0129
+  - 0.0004
+  - 0.0456
+  - 0.0447
+  - 0.0003
+  - 0.0002
+  - 0.0383
+  - 0.0025
+  - 0.0007
+  - 0.0011
+  bands:
+    optical:
+    - B8
+    - B4
+    - B3
+    - B2
+  data_mean:
+    optical:
+    - 92.6
+    - 124.3
+    - 94.2
+    - 98.0
+  data_std:
+    optical:
+    - 44.5
+    - 51.0
+    - 50.0
+    - 47.1
+  data_min:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+  data_max:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+encoder:
+  _target_: pangaea.encoders.dofa_encoder.DOFA_Encoder
+  encoder_weights: ./pretrained_models/DOFA_ViT_base_e100.pth
+  download_url: https://huggingface.co/XShadow/DOFA/resolve/main/DOFA_ViT_base_e100.pth
+  embed_dim: 768
+  input_size: 224
+  patch_size: 16
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4
+  use_norm: false
+  input_bands: ${dataset.bands}
+  wave_list:
+    optical:
+      B1: 0.44
+      B2: 1.108139
+      B3: 2.205496
+      B4: 1.055904
+      B5: 0.705
+      B6: 0.74
+      B7: 0.783
+      B8: 2.079129
+      B8A: 0.864
+      B9: 0.945
+      B10: 1.373
+      B11: 1.61
+      B12: 2.2
+      L8_B2: 0.482
+      L8_B3: 0.562
+      L8_B4: 0.655
+      L8_B5: 0.865
+      L8_B6: 1.609
+      L8_B7: 2.201
+      PS_Blue: 0.485
+      PS_Green: 0.545
+      PS_Red: 0.63
+      GF2_Blue: 0.485
+      GF2_Green: 0.555
+      GF2_Red: 0.66
+      GF2_NIR: 0.83
+    sar:
+      VV: 3.75
+      VH: 3.75
+      ASC_VV: 3.75
+      ASC_VH: 3.75
+      DSC_VV: 3.75
+      DSC_VH: 3.75
+      VV-VH: 3.75
+  output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.seg_mlp_fusion.MLPFusionDecoder
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+  channels: 128
+  multi_temporal: ${dataset.multi_temporal}
+  upsample_mode: bilinear
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  ignore_index: ${dataset.ignore_index}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/p6_random_wl_ablation/dofa_draw2
+seed: 234
+use_wandb: true
+wandb_project: wavelength-ablation
+wandb_run_id: l9xb11ki
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 1
+use_final_ckpt: false

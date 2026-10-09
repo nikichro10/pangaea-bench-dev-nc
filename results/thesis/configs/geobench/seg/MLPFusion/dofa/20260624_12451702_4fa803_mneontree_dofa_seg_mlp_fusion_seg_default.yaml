@@ -1,0 +1,177 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: mIoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.geobench.mneontree.mNeonTree
+  dataset_name: mNeonTree
+  root_path: ${oc.env:GEO_BENCH_DIR}/segmentation_v1.0/m-NeonTree
+  download_url: recursix/geo-bench-1.0
+  auto_download: true
+  img_size: 400
+  multi_temporal: false
+  multi_modal: false
+  ignore_index: -1
+  num_classes: 2
+  classes:
+  - No tree
+  - Tree
+  distribution:
+  - 0
+  - 0
+  bands:
+    optical:
+    - B4
+    - B3
+    - B2
+  data_mean:
+    optical:
+    - 122.29733333333333
+    - 131.00455555555556
+    - 108.44846666666666
+  data_std:
+    optical:
+    - 54.053087350753124
+    - 51.442224204429245
+    - 33.09221632578563
+  data_min:
+    optical:
+    - 0.0
+    - 0.0
+    - 0.0
+  data_max:
+    optical:
+    - 255.0
+    - 255.0
+    - 255.0
+encoder:
+  _target_: pangaea.encoders.dofa_encoder.DOFA_Encoder
+  encoder_weights: ./pretrained_models/DOFA_ViT_base_e100.pth
+  download_url: https://huggingface.co/XShadow/DOFA/resolve/main/DOFA_ViT_base_e100.pth
+  embed_dim: 768
+  input_size: 224
+  patch_size: 16
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4
+  use_norm: false
+  input_bands: ${dataset.bands}
+  wave_list:
+    optical:
+      B1: 0.44
+      B2: 0.49
+      B3: 0.56
+      B4: 0.665
+      B5: 0.705
+      B6: 0.74
+      B7: 0.783
+      B8: 0.832
+      B8A: 0.864
+      B9: 0.945
+      B10: 1.373
+      B11: 1.61
+      B12: 2.2
+      L8_B2: 0.482
+      L8_B3: 0.562
+      L8_B4: 0.655
+      L8_B5: 0.865
+      L8_B6: 1.609
+      L8_B7: 2.201
+    sar:
+      VV: 3.75
+      VH: 3.75
+      ASC_VV: 3.75
+      ASC_VH: 3.75
+      DSC_VV: 3.75
+      DSC_VH: 3.75
+      VV-VH: 3.75
+  output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.seg_mlp_fusion.MLPFusionDecoder
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+  channels: 128
+  multi_temporal: ${dataset.multi_temporal}
+  upsample_mode: bilinear
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  ignore_index: ${dataset.ignore_index}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/geobench/seg/MLPFusion/dofa
+seed: 234
+use_wandb: true
+wandb_project: geobench
+wandb_run_id: 8jypz3af
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 1
+use_final_ckpt: false

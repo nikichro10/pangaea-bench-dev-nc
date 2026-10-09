@@ -1,0 +1,245 @@
+task:
+  trainer:
+    _target_: pangaea.engine.trainer.SegTrainer
+    model: null
+    train_loader: null
+    optimizer: null
+    lr_scheduler: null
+    evaluator: null
+    exp_dir: null
+    device: null
+    criterion: null
+    n_epochs: 80
+    precision: fp32
+    ckpt_interval: 20
+    eval_interval: 5
+    log_interval: 5
+    best_metric_key: mIoU
+    use_wandb: ${use_wandb}
+  evaluator:
+    _target_: pangaea.engine.evaluator.SegEvaluator
+    val_loader: null
+    exp_dir: null
+    device: null
+    use_wandb: ${use_wandb}
+    inference_mode: sliding
+    sliding_inference_batch: 8
+    save_preds_dir: null
+dataset:
+  _target_: pangaea.datasets.sen1floods11.Sen1Floods11
+  dataset_name: Sen1Floods11
+  root_path: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/pangaea-datasets/sen1floods11
+  download_url: null
+  gcs_bucket: sen1floods11
+  auto_download: true
+  img_size: 512
+  multi_temporal: false
+  multi_modal: true
+  ignore_index: -1
+  num_classes: 2
+  classes:
+  - Not Water
+  - Water
+  distribution:
+  - 0.905
+  - 0.095
+  bands:
+    optical:
+    - B1
+    - B2
+    - B3
+    - B4
+    - B5
+    - B6
+    - B7
+    - B8
+    - B8A
+    - B9
+    - B10
+    - B11
+    - B12
+    sar:
+    - VV
+    - VH
+  data_mean:
+    optical:
+    - 1626.91600224
+    - 1396.03470631
+    - 1364.06118417
+    - 1218.22847919
+    - 1466.07290663
+    - 2386.90297537
+    - 2845.61256277
+    - 2622.95796892
+    - 3077.48221481
+    - 486.87436782
+    - 63.77861008
+    - 2030.64763024
+    - 1179.16607221
+    sar:
+    - -10.184408
+    - -16.895273
+  data_std:
+    optical:
+    - 700.17133846
+    - 739.09452682
+    - 735.2482388
+    - 864.936695
+    - 776.8803358
+    - 921.36834309
+    - 1084.37346097
+    - 1022.63418007
+    - 1196.44255318
+    - 336.61105431
+    - 143.99923282
+    - 980.87061347
+    - 764.60836557
+    sar:
+    - 4.255339
+    - 5.290568
+  data_max:
+    optical:
+    - 9994
+    - 11630
+    - 15100
+    - 17418
+    - 10925
+    - 11569
+    - 12383
+    - 15516
+    - 13253
+    - 3947
+    - 1426
+    - 14093
+    - 13472
+    sar:
+    - 29.926394
+    - 17.376385
+  data_min:
+    optical:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    sar:
+    - -65.45004
+    - -79.161446
+encoder:
+  _target_: pangaea.encoders.panopticon_encoder.PanopticonEncoder
+  encoder_weights: ./pretrained_models/panopticon_vitb14_teacher.pth
+  download_url: https://huggingface.co/lewaldm/panopticon/resolve/main/panopticon_vitb14_teacher.pth
+  input_size: 224
+  embed_dim: 768
+  patch_size: 14
+  attn_dim: 2304
+  use_norm: false
+  input_bands:
+    optical:
+    - B2
+    - B3
+    - B4
+  wave_list:
+    optical:
+      B1: 442.923
+      B2: 492.997
+      B3: 559.599
+      B4: 664.63
+      B5: 704.006
+      B6: 740.552
+      B7: 782.419
+      B8: 827.539
+      B8A: 864.78
+      B9: 945.029
+      B10: 1373.364
+      B11: 1613.862
+      B12: 2203.618
+      L8_B2: 482.627
+      L8_B3: 560.992
+      L8_B4: 654.286
+      L8_B5: 864.613
+      L8_B6: 1608.747
+      L8_B7: 2203.505
+    sar:
+      VV: -1
+      VH: -2
+      ASC_VV: -3
+      ASC_VH: -4
+      DSC_VV: -5
+      DSC_VH: -6
+      VV-VH: -7
+  output_layers:
+  - 3
+  - 5
+  - 7
+  - 11
+  output_dim: 768
+decoder:
+  _target_: pangaea.decoders.seg_mlp_fusion.MLPFusionDecoder
+  encoder: null
+  num_classes: ${dataset.num_classes}
+  finetune: ${finetune}
+  channels: 128
+  multi_temporal: ${dataset.multi_temporal}
+  upsample_mode: bilinear
+preprocessing:
+  train:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.RandomCropToEncoder
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  val:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+  test:
+    _target_: pangaea.engine.data_preprocessor.Preprocessor
+    preprocessor_cfg:
+    - _target_: pangaea.engine.data_preprocessor.BandFilter
+    - _target_: pangaea.engine.data_preprocessor.NormalizeMeanStd
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  ignore_index: ${dataset.ignore_index}
+lr_scheduler:
+  _target_: pangaea.utils.schedulers.MultiStepLR
+  optimizer: null
+  total_iters: null
+  lr_milestones:
+  - 0.6
+  - 0.9
+optimizer:
+  _target_: torch.optim.AdamW
+  params: null
+  lr: 0.0001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.05
+train: true
+work_dir: /dss/dsstbyfs02/pn49cu/pn49cu-dss-0001/niklas/experiments/panopticon_rgb_mlp_fusion
+seed: 234
+use_wandb: true
+wandb_project: geofm-bench-rgb
+wandb_run_id: 1thflh7t
+num_workers: 4
+batch_size: 8
+test_num_workers: 4
+test_batch_size: 1
+finetune: false
+ckpt_dir: null
+limited_label_train: 1
+limited_label_val: 1
+limited_label_strategy: stratified
+stratification_bins: 3
+data_replicate: 1
+use_final_ckpt: false
