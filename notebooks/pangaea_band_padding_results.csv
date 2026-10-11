@@ -1,9 +1,0 @@
-,HLS-BurnScars,HLS-BurnScars,HLS-BurnScars,Sen1Floods11,Sen1Floods11,Sen1Floods11,MADOS,MADOS,MADOS,PASTIS,PASTIS,PASTIS,DynamicEarthNet,DynamicEarthNet,DynamicEarthNet,CropTypeMapping,CropTypeMapping,CropTypeMapping,SpaceNet7-CD,SpaceNet7-CD,SpaceNet7-CD,AI4SmallFarms,AI4SmallFarms,AI4SmallFarms,FiveBillionPixels,FiveBillionPixels,FiveBillionPixels
-,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff,w/o padding,w/ padding,% diff
-encoder,,,,,,,,,,,,,,,,,,,,,,,,,,,
-DOFA,80.64,81.67,+1%,87.69,89.28,+2%,60.39,58.44,-3%,30.37,28.66,-6%,41.12,39.35,-4%,36.21,54.38,+50%,61.07,60.68,-1%,36.44,35.36,-3%,69.93,70.16,+0%
-DOFAv2,78.27,78.7,+1%,88.01,88.05,+0%,48.6,46.66,-4%,19.79,22.19,+12%,42.94,43.3,+1%,36.23,49.12,+36%,63.63,61.9,-3%,38.08,37.65,-1%,71.22,70.02,-2%
-CARL,80.84,78.46,-3%,88.17,88.13,+0%,50.5,48.18,-5%,37.78,37.86,+0%,37.38,36.73,-2%,44.66,50.74,+14%,58.9,57.51,-2%,33.74,31.44,-7%,50.32,45.65,-9%
-Panopticon,84.22,83.83,+0%,90.59,90.3,+0%,68.22,61.63,-10%,36.81,36.86,+0%,40.55,39.28,-3%,47.99,49.41,+3%,60.77,62.1,+2%,37.88,38.15,+1%,70.1,68.84,-2%
-SMARTIES,82.84,82.96,+0%,90.05,90.12,+0%,62.28,62.63,+1%,35.75,34.03,-5%,39.41,37.35,-5%,52.04,37.08,-29%,59.51,59.47,+0%,35.47,34.93,-2%,57.32,58.03,+1%
-Copernicus-FM,82.33,82.22,+0%,89.11,89.7,+1%,56.9,59.28,+4%,33.78,37.15,+10%,37.72,36.42,-3%,48.08,52.65,+10%,62.36,58.98,-5%,33.35,33.25,+0%,62.8,57.31,-9%

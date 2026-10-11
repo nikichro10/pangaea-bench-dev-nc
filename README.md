@@ -29,7 +29,8 @@ in a separate repository built on SpectralEarth.
 - **Wavelength ablations**: true sensor wavelengths, shuffled, random and constant wavelength
   metadata (`scripts/slurm_scripts/wavelength_ablation/`).
 - **GeoBench** segmentation and classification tasks run with the same protocol.
-- **Thesis results snapshot** in [`results/thesis/`](results/thesis/README.md).
+- **Analysis notebooks** for every table and figure of Chapter 5.1 in [`notebooks/`](notebooks/),
+  with the test metrics and configs of all thesis runs in `notebooks/runs/`.
 
 ## Models
 
@@ -111,22 +112,38 @@ thesis; adjust `DATASET_PATH`, `WORK_DIR` and the `#SBATCH` lines for another en
 | `scripts/slurm_scripts/wavelength_ablation/` | True, shuffled, random and constant wavelength metadata |
 | `scripts/slurm_scripts/qualitative/`, `scripts/qualitative/` | Qualitative segmentation examples |
 
-Tables and figures are produced by the notebooks in `notebooks/` (figures in `notebooks/figures/`).
-[`results/thesis/README.md`](results/thesis/README.md) maps each table and figure of Chapter 5.1 to
-its experiment group, SLURM scripts and notebook. `results/thesis/runs.csv` holds the test metrics
-and `results/thesis/configs/` the resolved config of every run, so the numbers can be checked without
-access to the original experiment storage.
+Tables and figures are produced by the notebooks in [`notebooks/`](notebooks/), figures are saved to
+`notebooks/figures/`:
+
+| Thesis | Notebook | Scripts (`scripts/slurm_scripts/`) |
+|---|---|---|
+| Tables 7, 8, 9, 12, Figure 15 | `analyze_results.ipynb` | `run_*_{seg,mlp_fusion}_benchmark.sh`, `run_geobench_*`, `rgb/` |
+| Table 10: normalization | `analyze_norm_ablation.ipynb` | `Ablations/run_norm_ablation_*.sh`, `Ablations/run_carl_norm_ablation.sh` |
+| Table 11: band padding | `analyze_band_padding.ipynb` | `Ablations/run_band_padding_*.sh` |
+| Figure 14: qualitative examples | `scripts/qualitative/plot_final_grid.py` | `qualitative/` |
+| Figure 16: band degradation | `analyze_band_degradation.ipynb` | `band_degradation/` |
+| Figure 17: S2 default vs. true vs. random λ | `analyze_wrong_wavelength_summary.ipynb` | `wavelength_ablation/run_wavelength_ablation*.sh`, `run_p6_*.sh` |
+| Figure 18: S2 default vs. true wavelengths | `analyze_wavelength_ablation.ipynb` | – |
+| Figure 19: corrupted wavelengths | `analyze_wrong_wavelength_summary.ipynb` | `wavelength_ablation/run_p{2,4}_wlswap_ablation.sh`, `run_p6_*.sh`, `run_const_wl_ablation.sh` |
+
+The notebooks read the training logs from the experiment storage on the cluster. So that the numbers
+can be checked without that storage, `notebooks/runs/runs.csv` lists every thesis run with its
+experiment group, dataset, encoder, decoder, seed and test metrics, and `notebooks/runs/configs/`
+holds the resolved Hydra config of each run. Both are regenerated with
+`python3 scripts/export_thesis_results.py`. Where an encoder/dataset pair was run more than once,
+the notebooks select the run used in the thesis.
 
 Experiments that are not part of the thesis are kept in [`legacy/`](legacy/README.md).
 
 ## Repository layout
 
 ```
+notebooks/      analysis notebooks for the thesis tables and figures
+  figures/      thesis figures
+  runs/         test metrics (runs.csv) and configs of all thesis runs
 pangaea/        encoders, decoders, datasets, training and evaluation engine
 configs/        Hydra configs (encoder, decoder, dataset, preprocessing, task, ...)
 scripts/        SLURM launch scripts, qualitative plots, results export
-notebooks/      analysis notebooks and thesis figures
-results/thesis/ snapshot of all thesis runs (metrics + configs)
 legacy/         experiments not used in the thesis
 ```
 

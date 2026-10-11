@@ -5,14 +5,14 @@ For every run under the experiment groups listed in GROUPS, this script
   * parses the final [test] block of train.log-0 (same logic as the analysis notebooks),
   * copies the resolved Hydra config (configs/config.yaml),
 and writes
-  results/thesis/runs.csv                         one row per run
-  results/thesis/configs/<group>/<run_dir>.yaml   the run's config
+  notebooks/runs/runs.csv                         one row per run
+  notebooks/runs/configs/<group>/<run_dir>.yaml   the run's config
 
 The full train.log-0 files (~1.4 GB) and checkpoints stay on the DSS experiment storage.
 
 Usage:
     python3 scripts/export_thesis_results.py
-    python3 scripts/export_thesis_results.py --experiments /path/to/experiments --out results/thesis
+    python3 scripts/export_thesis_results.py --experiments /path/to/experiments --out notebooks/runs
 """
 
 import argparse
@@ -44,10 +44,10 @@ GROUPS = {
     "wavelength_ablation": "Fig17",
     "wavelength_ablation_mlpfusion": "Fig17 (MLPFusion variant)",
     "wavelength_ablation_const_wl": "Fig19 (constant 550 nm)",
-    "p1_wlswap_ablation": "Fig19 (within-group shuffle)",
-    "p2_wlswap_ablation": "Fig19 (full shuffle, draws A/B)",
-    "p3_wlswap_ablation": "Fig19",
-    "p4_wlswap_ablation": "Fig19",
+    "p1_wlswap_ablation": "not in thesis (neighbor swap)",
+    "p2_wlswap_ablation": "Fig19 (within-group shuffle, draws A/B)",
+    "p3_wlswap_ablation": "not in thesis (full reversal)",
+    "p4_wlswap_ablation": "Fig19 (full random shuffle, draws 1-3)",
     "p6_random_wl_ablation": "Fig17, Fig19 (random wavelengths, MLPFusion)",
     "p6_random_wl_ablation_upernet": "Fig17, Fig19 (random wavelengths, UPerNet)",
 }
@@ -100,7 +100,7 @@ def describe(cfg: dict) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--experiments", type=Path, default=EXPERIMENTS_BASE)
-    ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parents[1] / "results" / "thesis")
+    ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parents[1] / "notebooks" / "runs")
     args = ap.parse_args()
 
     cfg_out = args.out / "configs"
